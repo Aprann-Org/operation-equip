@@ -1,0 +1,105 @@
+.panel { display: flex; flex-direction: column; gap: 0; }
+
+.pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.other {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stageBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.stageBtn:hover:not(:disabled) {
+  background: var(--blue-light);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.stageBtn:disabled {
+  cursor: default;
+}
+
+.stageBtn.current {
+  background: var(--surface);
+  color: var(--text-primary);
+  font-weight: 600;
+  border-width: 2px;
+}
+
+.stageBtn.next {
+  border-style: dashed;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.currentLabel {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+.subStatusForm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.retireToggle {
+  width: 100%;
+  justify-content: center;
+}
+
+.retireBox {
+  background: var(--red-light);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.retireTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+
+.retireFields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.retireBtns {
+  display: flex;
+  gap: 8px;
+}
