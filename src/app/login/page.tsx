@@ -8,9 +8,9 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; message?: string }>
 }) {
-  const { error } = await searchParams
+  const { error, message } = await searchParams
 
   return (
     <div className={styles.page}>
@@ -23,6 +23,11 @@ export default async function LoginPage({
         <h1 className={styles.title}>Welcome back</h1>
         <p className={styles.subtitle}>Sign in to your account to continue.</p>
 
+        {message && (
+          <p style={{ fontSize: 13, color: 'var(--green)', background: 'var(--green-light)', padding: '9px 12px', borderRadius: 6, marginBottom: 12 }}>
+            {decodeURIComponent(message)}
+          </p>
+        )}
         {error && <p className="form-error">{decodeURIComponent(error)}</p>}
 
         <form action={signIn}>
@@ -53,6 +58,9 @@ export default async function LoginPage({
           <button type="submit" className={`btn btn-primary ${styles.submitBtn}`}>
             Sign in
           </button>
+          <a href="/forgot-password" className={styles.forgotLink}>
+            Forgot password?
+          </a>
         </form>
       </div>
     </div>

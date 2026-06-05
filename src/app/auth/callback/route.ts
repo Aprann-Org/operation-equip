@@ -11,6 +11,11 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // Password reset flow: `next` is /reset-password — go straight there.
+      if (next === '/reset-password') {
+        return NextResponse.redirect(`${origin}/reset-password`)
+      }
+
       // If this was an invited user, create their role from the invitation metadata
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
@@ -18,7 +23,6 @@ export async function GET(request: Request) {
         const invitedOrgId = user.user_metadata?.invited_org_id as string | undefined
 
         if (invitedRole && invitedOrgId) {
-          // Insert role — ignore conflict if already exists
           await supabase.from('user_roles').upsert(
             { user_id: user.id, organization_id: invitedOrgId, role: invitedRole },
             { onConflict: 'user_id,organization_id,role', ignoreDuplicates: true }
