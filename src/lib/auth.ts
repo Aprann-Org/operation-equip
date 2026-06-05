@@ -12,13 +12,12 @@ export type UserContext = {
   isOrgAdmin: boolean
   isTechnician: boolean
   isRecipient: boolean
+  noRole: boolean              // authenticated but no user_roles entry yet
   canManageEquipment: boolean  // tech, org_admin, super_admin
   canManageUsers: boolean      // org_admin, super_admin
   canManageSettings: boolean   // org_admin, super_admin
 }
 
-// React cache() deduplicates this call within a single request tree.
-// Layout and every page that calls it share one DB round-trip.
 export const getCurrentUserContext = cache(async (): Promise<UserContext | null> => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -29,10 +28,28 @@ export const getCurrentUserContext = cache(async (): Promise<UserContext | null>
     .select('role, organization_id')
     .eq('user_id', user.id)
 
-  // Priority order for "primary" role
+  // Account exists but has no role assigned yet
+  if (!roles?.length) {
+    return {
+      userId: user.id,
+      email: user.email ?? '',
+      role: 'recipient',
+      organizationId: null,
+      organizationName: null,
+      isSuperAdmin: false,
+      isOrgAdmin: false,
+      isTechnician: false,
+      isRecipient: false,
+      noRole: true,
+      canManageEquipment: false,
+      canManageUsers: false,
+      canManageSettings: false,
+    }
+  }
+
   const PRIORITY: UserRole[] = ['super_admin', 'org_admin', 'technician', 'recipient']
-  const topRole: UserRole = PRIORITY.find(p => roles?.some(r => r.role === p)) ?? 'recipient'
-  const primaryRecord = roles?.find(r => r.role === topRole)
+  const topRole: UserRole = PRIORITY.find(p => roles.some(r => r.role === p)) ?? 'recipient'
+  const primaryRecord = roles.find(r => r.role === topRole)
   const orgId = primaryRecord?.organization_id ?? null
 
   let orgName: string | null = null
@@ -55,6 +72,7 @@ export const getCurrentUserContext = cache(async (): Promise<UserContext | null>
     isOrgAdmin: topRole === 'org_admin',
     isTechnician: topRole === 'technician',
     isRecipient: topRole === 'recipient',
+    noRole: false,
     canManageEquipment: topRole !== 'recipient',
     canManageUsers: topRole === 'super_admin' || topRole === 'org_admin',
     canManageSettings: topRole === 'super_admin' || topRole === 'org_admin',

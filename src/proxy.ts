@@ -81,6 +81,8 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Forward pathname to layout so it can detect /setup without a DB query
+  supabaseResponse.headers.set('x-pathname', path)
   return applySecurityHeaders(supabaseResponse)
 }
 
