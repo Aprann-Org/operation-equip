@@ -5,9 +5,18 @@ import styles from './page.module.css'
 async function getStats() {
   const supabase = await createClient()
 
-  const [orgResult, equipResult] = await Promise.all([
+  const [orgResult, equipResult, shipmentsResult] = await Promise.all([
     supabase.from('organizations').select('id', { count: 'exact', head: true }),
     supabase.from('equipment').select('stage'),
+    supabase
+      .from('equipment')
+      .select(`
+        id, internal_id, make, model, date_sent,
+        destination_org:organizations!destination_organization_id ( name )
+      `)
+      .eq('stage', 'distributed')
+      .order('date_sent', { ascending: false })
+      .limit(5),
   ])
 
   const stageCounts: Record<string, number> = {}
@@ -22,6 +31,7 @@ async function getStats() {
     totalDistributed: stageCounts['distributed'] ?? 0,
     totalInProcess: stageCounts['in_process'] ?? 0,
     totalReady: stageCounts['ready_for_distribution'] ?? 0,
+    recentShipments: shipmentsResult.data ?? [],
   }
 }
 
@@ -94,10 +104,43 @@ export default async function DashboardPage() {
                 View all
               </a>
             </div>
-            <div className="empty-state">
-              <span className="empty-icon">📤</span>
-              <span>Distributed equipment will appear here.</span>
-            </div>
+            {stats.recentShipments.length === 0 ? (
+              <div className="empty-state">
+                <span className="empty-icon">📤</span>
+                <span>No distributed equipment yet.</span>
+              </div>
+            ) : (
+              <div className="table-wrapper">
+                <table className="table">
+                  <thead>
+                    <tr><th>Device</th><th>Recipient</th><th>Sent</th></tr>
+                  </thead>
+                  <tbody>
+                    {stats.recentShipments.map((e) => {
+                      const dest = (e.destination_org as unknown as { name: string } | null)?.name
+                      return (
+                        <tr key={e.id}>
+                          <td>
+                            <a href={`/equipment/${e.id}`} className="table-link">
+                              {e.internal_id}
+                            </a>
+                            {(e.make || e.model) && (
+                              <div className="table-muted" style={{ fontSize: 12 }}>
+                                {[e.make, e.model].filter(Boolean).join(' ')}
+                              </div>
+                            )}
+                          </td>
+                          <td className="table-muted">{dest ?? '—'}</td>
+                          <td className="table-muted">
+                            {e.date_sent ? new Date(e.date_sent).toLocaleDateString() : '—'}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           <div className="card">

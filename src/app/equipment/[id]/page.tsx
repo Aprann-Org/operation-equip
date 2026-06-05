@@ -6,6 +6,8 @@ import { ChecklistPanel } from './ChecklistPanel'
 import { NotesPanel } from './NotesPanel'
 import { BatteryPanel } from './BatteryPanel'
 import { DestinationForm } from './DestinationForm'
+import { assignTechnician } from './actions'
+import { getCurrentUserContext } from '@/lib/auth'
 import styles from './page.module.css'
 
 const SUB_STATUS_LABELS: Record<string, string> = {
@@ -32,6 +34,7 @@ export default async function EquipmentDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const ctx = await getCurrentUserContext()
 
   const { data: equip } = await supabase
     .from('equipment')
@@ -52,7 +55,7 @@ export default async function EquipmentDetailPage({
   const equipType = equip.equipment_type as { id: string; name: string } | null
 
   // Parallel fetches: checklist, checklist results, battery reports, recipient orgs, org users
-  const [checklistRes, checklistResultsRes, batteryRes, recipientOrgsRes, orgUsersRes] = await Promise.all([
+  const [checklistRes, checklistResultsRes, batteryRes, recipientOrgsRes, orgUsersRes, techRolesRes] = await Promise.all([
     equipType
       ? supabase
           .from('checklist_templates')
@@ -77,11 +80,17 @@ export default async function EquipmentDetailPage({
       .in('type', ['recipient', 'both'])
       .eq('status', 'active')
       .order('name'),
-    // Try to fetch org members (may be empty if caller lacks org_admin role)
+    // Org users for pickers — may be empty if caller lacks org_admin role
     supabase
       .from('users')
       .select('id, first_name, last_name, email')
       .order('email'),
+    // Technicians in this org
+    supabase
+      .from('user_roles')
+      .select('user_id, users!user_id ( id, first_name, last_name, email )')
+      .eq('organization_id', equip.organization_id)
+      .in('role', ['technician', 'org_admin']),
   ])
 
   type LocalChecklistItem = { id: string; checklist_template_id: string; order: number; label: string; result_type: 'boolean' | 'text' | 'numeric'; required: boolean; help_text: string | null }
@@ -92,6 +101,10 @@ export default async function EquipmentDetailPage({
   const batteryReports = batteryRes.data ?? []
   const recipientOrgs = recipientOrgsRes.data ?? []
   const orgUsers = orgUsersRes.data ?? []
+  type TechUser = { id: string; first_name: string; last_name: string; email: string }
+  const technicians = (techRolesRes.data ?? [])
+    .map(r => r.users as unknown as TechUser | null)
+    .filter((u): u is TechUser => !!u)
 
   type LocalNote = { id: string; equipment_id: string; note: string; visibility: 'internal' | 'recipient_visible'; created_at: string; user: { first_name: string; last_name: string; email: string } | null }
   const notes = (equip.equipment_notes ?? []) as unknown as LocalNote[]
@@ -306,6 +319,40 @@ export default async function EquipmentDetailPage({
               />
             </div>
           </div>
+
+          {/* Technician assignment — shown to admin/tech only */}
+          {ctx?.canManageEquipment && (
+            <div className="card">
+              <div className="card-header"><span className="card-title">Assigned Technician</span></div>
+              <div className="card-body">
+                {equip.assigned_technician_id && (
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 10 }}>
+                    Currently: {
+                      technicians.find(t => t.id === equip.assigned_technician_id)
+                        ? (() => { const t = technicians.find(u => u.id === equip.assigned_technician_id)!; return `${t.first_name} ${t.last_name}`.trim() || t.email })()
+                        : 'Unknown'
+                    }
+                  </p>
+                )}
+                <form action={assignTechnician} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <input type="hidden" name="equipment_id" value={equip.id} />
+                  <select name="technician_id" defaultValue={equip.assigned_technician_id ?? ''} className="select">
+                    <option value="">Unassigned</option>
+                    {technicians.map(t => (
+                      <option key={t.id} value={t.id}>
+                        {`${t.first_name} ${t.last_name}`.trim() || t.email}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="field">
+                    <label className="label">Tech Due Date</label>
+                    <input name="tech_due_date" type="date" defaultValue={equip.tech_due_date ?? ''} className="input" />
+                  </div>
+                  <button type="submit" className="btn btn-secondary btn-sm">Save</button>
+                </form>
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           <div className="card">

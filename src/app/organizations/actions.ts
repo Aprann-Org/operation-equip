@@ -12,8 +12,19 @@ export async function createOrganization(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
+  // Only super_admin or org_admin may create organizations
+  const { data: adminRole } = await supabase
+    .from('user_roles')
+    .select('id')
+    .eq('user_id', user.id)
+    .in('role', ['super_admin', 'org_admin'])
+    .limit(1)
+
+  if (!adminRole?.length) return { error: 'Only administrators can create organizations' }
+
   const name = (formData.get('name') as string).trim()
   if (!name) return { error: 'Name is required' }
+  if (name.length > 200) return { error: 'Name is too long' }
 
   const { data: org, error } = await supabase
     .from('organizations')

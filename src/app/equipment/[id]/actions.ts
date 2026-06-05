@@ -31,12 +31,15 @@ export async function changeStage(formData: FormData): Promise<{ error?: string 
     updateData.retirement_notes = (formData.get('retirement_notes') as string) || null
   }
 
-  const { error: updateError } = await supabase
+  // .select() lets us detect if RLS blocked the update (returns empty array)
+  const { data: updated, error: updateError } = await supabase
     .from('equipment')
     .update(updateData)
     .eq('id', equipmentId)
+    .select('id')
 
   if (updateError) return { error: updateError.message }
+  if (!updated?.length) return { error: 'Permission denied' }
 
   await supabase.from('stage_history').insert({
     organization_id: equip.organization_id,
@@ -61,12 +64,14 @@ export async function changeSubStatus(formData: FormData): Promise<{ error?: str
   const equipmentId = formData.get('equipment_id') as string
   const subStatus = (formData.get('sub_status') as string) || null
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('equipment')
     .update({ sub_status: subStatus })
     .eq('id', equipmentId)
+    .select('id')
 
   if (error) return { error: error.message }
+  if (!updated?.length) return { error: 'Permission denied' }
 
   revalidatePath(`/equipment/${equipmentId}`)
   return {}
@@ -80,6 +85,7 @@ export async function addNote(formData: FormData): Promise<{ error?: string }> {
   const equipmentId = formData.get('equipment_id') as string
   const note = (formData.get('note') as string).trim()
   if (!note) return { error: 'Note cannot be empty' }
+  if (note.length > 10000) return { error: 'Note is too long (max 10,000 characters)' }
 
   const { data: equip } = await supabase
     .from('equipment')
@@ -133,7 +139,9 @@ export async function saveChecklistResult(formData: FormData): Promise<{ error?:
   } else if (resultType === 'numeric') {
     payload.result_numeric = parseFloat(formData.get('result_numeric') as string)
   } else {
-    payload.result_text = formData.get('result_text') as string
+    const text = formData.get('result_text') as string
+    if (text.length > 5000) return { error: 'Result text is too long' }
+    payload.result_text = text
   }
 
   const { error } = await supabase
@@ -152,7 +160,8 @@ export async function updateDestination(formData: FormData): Promise<{ error?: s
   if (!user) return { error: 'Not authenticated' }
 
   const equipmentId = formData.get('equipment_id') as string
-  const { error } = await supabase
+
+  const { data: updated, error } = await supabase
     .from('equipment')
     .update({
       destination_organization_id: (formData.get('destination_organization_id') as string) || null,
@@ -160,11 +169,31 @@ export async function updateDestination(formData: FormData): Promise<{ error?: s
       tech_due_date: (formData.get('tech_due_date') as string) || null,
     })
     .eq('id', equipmentId)
+    .select('id')
 
   if (error) return { error: error.message }
+  if (!updated?.length) return { error: 'Permission denied' }
 
   revalidatePath(`/equipment/${equipmentId}`)
   return {}
+}
+
+export async function assignTechnician(formData: FormData): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  const equipmentId = formData.get('equipment_id') as string
+  const technicianId = (formData.get('technician_id') as string) || null
+  const techDueDate = (formData.get('tech_due_date') as string) || null
+
+  await supabase
+    .from('equipment')
+    .update({ assigned_technician_id: technicianId, tech_due_date: techDueDate })
+    .eq('id', equipmentId)
+    .select('id')
+
+  revalidatePath(`/equipment/${equipmentId}`)
 }
 
 export async function createBatteryReport(
