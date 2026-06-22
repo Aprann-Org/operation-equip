@@ -1,0 +1,80 @@
+import { cache } from 'react'
+import { createClient } from '@/utils/supabase/server'
+import type { UserRole } from '@/lib/types'
+
+export type UserContext = {
+  userId: string
+  email: string
+  role: UserRole
+  organizationId: string | null
+  organizationName: string | null
+  isSuperAdmin: boolean
+  isOrgAdmin: boolean
+  isTechnician: boolean
+  isRecipient: boolean
+  noRole: boolean              // authenticated but no user_roles entry yet
+  canManageEquipment: boolean  // tech, org_admin, super_admin
+  canManageUsers: boolean      // org_admin, super_admin
+  canManageSettings: boolean   // org_admin, super_admin
+}
+
+export const getCurrentUserContext = cache(async (): Promise<UserContext | null> => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: roles } = await supabase
+    .from('user_roles')
+    .select('role, organization_id')
+    .eq('user_id', user.id)
+
+  // Account exists but has no role assigned yet
+  if (!roles?.length) {
+    return {
+      userId: user.id,
+      email: user.email ?? '',
+      role: 'recipient',
+      organizationId: null,
+      organizationName: null,
+      isSuperAdmin: false,
+      isOrgAdmin: false,
+      isTechnician: false,
+      isRecipient: false,
+      noRole: true,
+      canManageEquipment: false,
+      canManageUsers: false,
+      canManageSettings: false,
+    }
+  }
+
+  const PRIORITY: UserRole[] = ['super_admin', 'org_admin', 'technician', 'recipient']
+  const topRole: UserRole = PRIORITY.find(p => roles.some(r => r.role === p)) ?? 'recipient'
+  const primaryRecord = roles.find(r => r.role === topRole)
+  const orgId = primaryRecord?.organization_id ?? null
+
+  let orgName: string | null = null
+  if (orgId) {
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('name')
+      .eq('id', orgId)
+      .single()
+    orgName = org?.name ?? null
+  }
+
+  return {
+    userId: user.id,
+    email: user.email ?? '',
+    role: topRole,
+    organizationId: orgId,
+    organizationName: orgName,
+    isSuperAdmin: topRole === 'super_admin',
+    isOrgAdmin: topRole === 'org_admin',
+    isTechnician: topRole === 'technician',
+    isRecipient: topRole === 'recipient',
+    noRole: false,
+    canManageEquipment: topRole !== 'recipient',
+    canManageUsers: topRole === 'super_admin' || topRole === 'org_admin',
+    canManageSettings: topRole === 'super_admin' || topRole === 'org_admin',
+  }
+})

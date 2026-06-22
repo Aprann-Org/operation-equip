@@ -1,0 +1,7 @@
+.wrapper { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.replyForm { display: flex; flex-direction: column; gap: 8px; }
+
+.replyFooter { display: flex; justify-content: flex-end; }
+
+.statusForm { display: flex; flex-direction: column; gap: 6px; }

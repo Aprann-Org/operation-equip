@@ -1,0 +1,373 @@
+/* ─── Root split ──────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 440px;
+}
+
+@media (max-width: 768px) {
+  .page { grid-template-columns: 1fr; }
+  .hero { display: none; }
+}
+
+/* ─── Left: dark hero panel ───────────────────────────────── */
+.hero {
+  background: #0d1e18;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 36px 36px;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* ambient glow behind pipeline */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 55% at 42% 32%,
+    rgba(21, 168, 126, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── Hero nav ────────────────────────────────────────────── */
+.heroNav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+.heroLogoMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #15a87e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 7px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.navBrandName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #b8d4ca;
+  letter-spacing: -0.2px;
+}
+
+.breadcrumb {
+  font-size: 11px;
+  color: #3a5e52;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Pipeline visualization ──────────────────────────────── */
+.pipelineArea {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.tracks {
+  display: flex;
+  flex-direction: row;
+  gap: 36px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.track {
+  width: 2px;
+  position: relative;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    #1c3a2d 0px, #1c3a2d 5px,
+    transparent 5px, transparent 12px
+  );
+}
+
+.dot {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  animation: dotPulse 3s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.65; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+.cardsColumn {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.deviceCard {
+  position: absolute;
+  transform: translateY(-50%);
+  left: 0;
+  right: 24px;
+  max-width: 160px;
+  background: #132a22;
+  border: 1px solid #1c3a2d;
+  border-radius: 6px;
+  padding: 7px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.deviceCard::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  height: 1px;
+  width: 24px;
+  background: linear-gradient(to right, transparent, #1c3a2d);
+}
+
+.deviceId {
+  font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5db89a;
+  letter-spacing: 0.8px;
+}
+
+.cardStage {
+  font-size: 9px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ─── Hero copy ───────────────────────────────────────────── */
+.heroContent {
+  flex-shrink: 0;
+  padding-top: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.heroTitle {
+  font-size: clamp(30px, 3.2vw, 44px);
+  font-weight: 800;
+  line-height: 1.04;
+  color: #e2ede9;
+  letter-spacing: -1px;
+  margin-bottom: 14px;
+}
+
+.heroDesc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #3e5e52;
+  max-width: 380px;
+  margin-bottom: 24px;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5aaa8a;
+  background: rgba(21, 168, 126, 0.08);
+  border: 1px solid rgba(21, 168, 126, 0.14);
+  border-radius: 20px;
+  padding: 6px 14px;
+}
+
+.statDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── Scroll indicator ────────────────────────────────────── */
+.scrollHint {
+  position: absolute;
+  bottom: 28px;
+  right: 32px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #1c3a2d;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a5e52;
+  font-size: 15px;
+  z-index: 1;
+  animation: arrowBounce 2.2s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+/* ─── Right: login panel ──────────────────────────────────── */
+.panel {
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 44px;
+  min-height: 100vh;
+}
+
+.formWrap {
+  width: 100%;
+  max-width: 320px;
+}
+
+/* ─── Brand block ─────────────────────────────────────────── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.logoMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: #15a87e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 9px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brandName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.2px;
+}
+
+.brandSub {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ─── Form heading ────────────────────────────────────────── */
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 28px;
+}
+
+/* ─── Submit ──────────────────────────────────────────────── */
+.submitBtn {
+  display: block;
+  width: 100%;
+  padding: 11px 16px;
+  margin-top: 8px;
+  background: #15a87e;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+  letter-spacing: -0.1px;
+  text-align: center;
+}
+
+.submitBtn:hover { background: #118f6b; }
+.submitBtn:focus-visible {
+  outline: 2px solid #15a87e;
+  outline-offset: 2px;
+}
+
+/* ─── Forgot link ─────────────────────────────────────────── */
+.forgotLink {
+  display: block;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #15a87e;
+  text-align: center;
+  transition: color 0.15s;
+}
+
+.forgotLink:hover { color: #118f6b; }
+.forgotLink:focus-visible {
+  outline: 2px solid #15a87e;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ─── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .scrollHint {
+    animation: none;
+  }
+}
