@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password']
+const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password', '/reset-password']
 
 // Routes recipients must not access — redirect them to their portal
 const RECIPIENT_BLOCKED = [
