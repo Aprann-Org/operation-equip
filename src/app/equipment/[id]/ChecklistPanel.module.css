@@ -1,0 +1,78 @@
+.panel { display: flex; flex-direction: column; gap: 12px; }
+
+.progress { display: flex; flex-direction: column; gap: 6px; }
+
+.progressText { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+.progressBar {
+  height: 5px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.items { display: flex; flex-direction: column; gap: 1px; }
+
+.item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.item:last-child { border-bottom: none; }
+
+.item.done { opacity: 0.75; }
+
+.itemHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.itemCheck {
+  font-size: 13px;
+  color: var(--text-muted);
+  width: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.done .itemCheck { color: var(--green); }
+
+.itemInfo { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+
+.itemLabel { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+
+.itemHint { font-size: 12px; color: var(--text-muted); }
+
+.itemForm {
+  margin-top: 8px;
+  padding-left: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boolButtons { display: flex; gap: 8px; }
+
+.passBtn { background: var(--green-light); color: var(--green); border-color: #bbf7d0; }
+.passBtn:hover:not(:disabled) { background: #dcfce7; }
+.failBtn { background: var(--red-light); color: var(--red); border-color: #fecaca; }
+.failBtn:hover:not(:disabled) { background: #fee2e2; }
+
+.textInput, .numInput { display: flex; gap: 8px; align-items: flex-start; }
+
+.resultValue {
+  padding-left: 26px;
+  margin-top: 4px;
+}
+
+.pass { color: var(--green); font-size: 13px; font-weight: 600; }
+.fail { color: var(--red); font-size: 13px; font-weight: 600; }
+.textResult { font-size: 13px; color: var(--text-secondary); font-style: italic; }
