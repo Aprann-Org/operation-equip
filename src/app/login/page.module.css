@@ -73,10 +73,11 @@
 
 .breadcrumb {
   font-size: 11px;
-  color: #3a5e52;
+  color: #5aaa8a;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  animation: heroFadeIn 0.35s ease both;
 }
 
 /* ─── Pipeline visualization ──────────────────────────────── */
@@ -184,6 +185,7 @@
   padding-top: 32px;
   position: relative;
   z-index: 1;
+  animation: heroFadeIn 0.5s ease 0.1s both;
 }
 
 .heroTitle {
@@ -198,62 +200,13 @@
 .heroDesc {
   font-size: 14px;
   line-height: 1.65;
-  color: #3e5e52;
+  color: #7ab8a4;
   max-width: 380px;
-  margin-bottom: 24px;
-}
-
-.stats {
-  display: flex;
-  gap: 10px;
-}
-
-.stat {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #5aaa8a;
-  background: rgba(21, 168, 126, 0.08);
-  border: 1px solid rgba(21, 168, 126, 0.14);
-  border-radius: 20px;
-  padding: 6px 14px;
-}
-
-.statDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* ─── Scroll indicator ────────────────────────────────────── */
-.scrollHint {
-  position: absolute;
-  bottom: 28px;
-  right: 32px;
-  width: 34px;
-  height: 34px;
-  border: 1px solid #1c3a2d;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #3a5e52;
-  font-size: 15px;
-  z-index: 1;
-  animation: arrowBounce 2.2s ease-in-out infinite;
-}
-
-@keyframes arrowBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
 }
 
 /* ─── Right: login panel ──────────────────────────────────── */
 .panel {
-  background: #ffffff;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,9 +295,21 @@
 }
 
 .submitBtn:hover { background: #118f6b; }
+.submitBtn:active { background: #0e7a5c; }
+.submitBtn:disabled { opacity: 0.65; cursor: not-allowed; }
 .submitBtn:focus-visible {
   outline: 2px solid #15a87e;
   outline-offset: 2px;
+}
+
+/* ─── Form feedback ───────────────────────────────────────── */
+.formSuccess {
+  font-size: 13px;
+  color: var(--green);
+  background: var(--green-light);
+  padding: 9px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
 }
 
 /* ─── Forgot link ─────────────────────────────────────────── */
@@ -366,8 +331,218 @@
 
 /* ─── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .dot,
-  .scrollHint {
-    animation: none;
-  }
+  .dot { animation: none; }
+  .heroContent { animation: none; }
+  .breadcrumb { animation: none; }
+  .slide { transition: none; }
+  .checkItem { animation: none; opacity: 1; }
+}
+
+/* ─── Hero fade keyframe ──────────────────────────────────── */
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ─── Slide cycling ───────────────────────────────────────── */
+.slidesContainer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.slideActive {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slideIndicators {
+  display: flex;
+  gap: 6px;
+  padding-top: 20px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.slideIndicator {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  background: #1c3a2d;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.3s, width 0.3s;
+}
+
+.slideIndicatorActive {
+  background: #15a87e;
+  width: 28px;
+}
+
+/* ─── Slide 2: Lifecycle stages ───────────────────────────── */
+.stagesList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
+
+.stageRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(28, 58, 45, 0.5);
+}
+
+.stageRow:last-child { border-bottom: none; }
+
+.stageDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stageLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #b8d4ca;
+  letter-spacing: 0.1px;
+}
+
+/* ─── Slide 3: Distribution flow ─────────────────────────── */
+.distFlow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
+
+.distNode {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #132a22;
+  border: 1px solid #1c3a2d;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.distNodeAccent {
+  border-color: rgba(21, 168, 126, 0.3);
+  background: rgba(21, 168, 126, 0.07);
+}
+
+.distIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.distNodeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.distNodeLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #b8d4ca;
+}
+
+.distNodeSub {
+  font-size: 11px;
+  color: #4d6b5e;
+}
+
+.distArrow {
+  text-align: center;
+  color: #15a87e;
+  font-size: 18px;
+  padding: 6px 0;
+  opacity: 0.7;
+}
+
+/* ─── Slide 3: QA checklist ───────────────────────────────── */
+.qaList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  border-bottom: 1px solid rgba(28, 58, 45, 0.4);
+  opacity: 0;
+  animation: checkItemIn 0.25s ease forwards;
+}
+
+.checkItem:last-child { border-bottom: none; }
+
+@keyframes checkItemIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.checkStatus {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.checkStatus_pass    { background: rgba(21, 168, 126, 0.18); color: #15a87e; }
+.checkStatus_warn    { background: rgba(200, 145, 58, 0.18);  color: #c8913a; }
+.checkStatus_pending { background: rgba(28, 58, 45, 0.6);     color: #3a5e4c; }
+
+.checkLabel {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 500;
+  color: #b8d4ca;
+  letter-spacing: 0.1px;
+}
+
+.checkLabelPending { color: #3a5e4c; }
+
+.checkNote {
+  font-size: 10px;
+  color: #c8913a;
+  letter-spacing: 0.2px;
+  flex-shrink: 0;
 }

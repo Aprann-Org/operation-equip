@@ -1,3 +1,4 @@
+import type React from 'react'
 import { createClient } from '@/utils/supabase/server'
 import { STAGE_ORDER, STAGE_LABELS, STAGE_COLORS } from '@/lib/types'
 import styles from './page.module.css'
@@ -37,6 +38,7 @@ async function getStats() {
 
 export default async function DashboardPage() {
   const stats = await getStats()
+  const pipelineTotal = STAGE_ORDER.reduce((sum, s) => sum + (stats.stageCounts[s] ?? 0), 0)
 
   return (
     <div className={styles.page}>
@@ -58,13 +60,22 @@ export default async function DashboardPage() {
           <p className="section-label">Overview</p>
           <div className={styles.statsGrid}>
             {[
-              { icon: '📦', value: stats.totalEquipment, label: 'Total Equipment' },
-              { icon: '✅', value: stats.totalDistributed, label: 'Distributed' },
-              { icon: '⚙️', value: stats.totalInProcess, label: 'In Process' },
-              { icon: '🏢', value: stats.orgCount, label: 'Organizations' },
+              { icon: '📦', value: stats.totalEquipment, label: 'Total Equipment', color: '#15a87e' },
+              { icon: '✅', value: stats.totalDistributed, label: 'Distributed', color: '#16a34a' },
+              { icon: '⚙️', value: stats.totalInProcess, label: 'In Process', color: '#d97706' },
+              { icon: '🏢', value: stats.orgCount, label: 'Organizations', color: '#4b9fcf' },
             ].map((s) => (
-              <div key={s.label} className={styles.statCard}>
-                <span className={styles.statIcon}>{s.icon}</span>
+              <div
+                key={s.label}
+                className={styles.statCard}
+                style={{ '--card-accent': s.color } as React.CSSProperties}
+              >
+                <span
+                  className={styles.statIcon}
+                  style={{ background: `${s.color}20` }}
+                >
+                  {s.icon}
+                </span>
                 <span className={styles.statValue}>{s.value}</span>
                 <span className={styles.statLabel}>{s.label}</span>
               </div>
@@ -76,22 +87,40 @@ export default async function DashboardPage() {
         <section>
           <p className="section-label">Equipment Pipeline</p>
           <div className={styles.pipeline}>
-            {STAGE_ORDER.map((stage) => (
-              <a
-                key={stage}
-                href={`/equipment?stage=${stage}`}
-                className={styles.pipelineStage}
-              >
-                <span
-                  className={styles.stageDot}
-                  style={{ background: STAGE_COLORS[stage] }}
-                />
-                <span className={styles.stageName}>{STAGE_LABELS[stage]}</span>
-                <span className={styles.stageCount}>
-                  {stats.stageCounts[stage] ?? 0}
-                </span>
-              </a>
-            ))}
+            {pipelineTotal > 0 && (
+              <div className={styles.pipelineSummaryBar}>
+                {STAGE_ORDER.map((stage) => {
+                  const count = stats.stageCounts[stage] ?? 0
+                  if (count === 0) return null
+                  return (
+                    <span
+                      key={stage}
+                      className={styles.pipelineSummarySegment}
+                      style={{
+                        width: `${(count / pipelineTotal) * 100}%`,
+                        background: STAGE_COLORS[stage],
+                      }}
+                    />
+                  )
+                })}
+              </div>
+            )}
+            <div className={styles.pipelineStages}>
+              {STAGE_ORDER.map((stage) => (
+                <a
+                  key={stage}
+                  href={`/equipment?stage=${stage}`}
+                  className={styles.pipelineStage}
+                  style={{ '--stage-color': STAGE_COLORS[stage] } as React.CSSProperties}
+                >
+                  <span className={styles.stageName}>{STAGE_LABELS[stage]}</span>
+                  <span className={styles.stageCount}>
+                    {stats.stageCounts[stage] ?? 0}
+                  </span>
+                  <span className={styles.stageBar} />
+                </a>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -117,7 +146,7 @@ export default async function DashboardPage() {
                   </thead>
                   <tbody>
                     {stats.recentShipments.map((e) => {
-                      const dest = (e.destination_org as unknown as { name: string } | null)?.name
+                      const dest = (e.destination_org as { name: string }[] | null)?.[0]?.name
                       return (
                         <tr key={e.id}>
                           <td>

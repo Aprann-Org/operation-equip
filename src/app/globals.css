@@ -1,5 +1,5 @@
 :root {
-  --bg: #f4f6f9;
+  --bg: #f2f7f4;
   --surface: #ffffff;
   --border: #e5e7eb;
   --text-primary: #111827;
@@ -17,6 +17,10 @@
   --red-light: #fef2f2;
   --orange: #ea580c;
   --orange-light: #fff7ed;
+  /* Brand */
+  --brand: #15a87e;
+  --brand-hover: #118f6b;
+  --brand-light: #ecfaf5;
 }
 
 html, body {
@@ -72,7 +76,7 @@ a { color: inherit; text-decoration: none; }
 /* ── Cards ────────────────────────────────────────────────── */
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid #ddeee7;
   border-radius: 10px;
 }
 
@@ -121,8 +125,8 @@ a { color: inherit; text-decoration: none; }
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgb(21 168 126 / 12%);
 }
 
 .textarea {
@@ -182,8 +186,8 @@ a { color: inherit; text-decoration: none; }
 
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-primary { background: var(--blue); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--brand-hover); }
 
 .btn-secondary { background: var(--surface); color: var(--text-primary); border-color: var(--border); }
 .btn-secondary:hover:not(:disabled) { background: #f3f4f6; }

@@ -1,0 +1,169 @@
+/* ── Overlay ─────────────────────────────────────────────── */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0d1e18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.exit {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+/* ── Logomark ─────────────────────────────────────────────── */
+.logoWrap {
+  animation: logoIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+@keyframes logoIn {
+  from {
+    opacity: 0;
+    transform: scale(0.68);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.logoMark {
+  width: 64px;
+  height: 64px;
+  border: 2px solid #15a87e;
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The charge fill — rises from bottom like a battery */
+.charge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #15a87e;
+  animation: charge 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.55s both;
+}
+
+@keyframes charge {
+  from { height: 0; }
+  to   { height: 100%; }
+}
+
+.logoText {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── Wordmark ─────────────────────────────────────────────── */
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.name {
+  font-size: 23px;
+  font-weight: 700;
+  color: #e2ede9;
+  letter-spacing: -0.4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  animation: nameIn 0.45s ease-out 1.05s both;
+}
+
+@keyframes nameIn {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.locale {
+  font-size: 12px;
+  font-weight: 500;
+  color: #3e5e52;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  animation: fadeIn 0.45s ease-out 1.3s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Pipeline bar ─────────────────────────────────────────── */
+.track {
+  width: 180px;
+  height: 2px;
+  background: #132a22;
+  border-radius: 2px;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-out 1.45s both;
+}
+
+.trackFill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(to right, #15a87e 0%, #4b9fcf 100%);
+  border-radius: 2px;
+  animation: sweep 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.55s both;
+}
+
+@keyframes sweep {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+/* ── Reduced motion ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .logoWrap,
+  .name,
+  .locale,
+  .track {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .charge {
+    animation: none;
+    height: 100%;
+  }
+
+  .trackFill {
+    animation: none;
+    width: 100%;
+  }
+
+  .splash {
+    transition: opacity 0.3s;
+  }
+}
