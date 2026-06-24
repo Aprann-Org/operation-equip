@@ -312,6 +312,38 @@
   margin-bottom: 12px;
 }
 
+/* ─── Password field ──────────────────────────────────────── */
+.passwordWrap {
+  position: relative;
+}
+
+.passwordWrap :global(.input) {
+  padding-right: 40px;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.passwordToggle:hover { color: #6b7280; }
+.passwordToggle:focus-visible {
+  outline: 2px solid #15a87e;
+  outline-offset: 1px;
+}
+
 /* ─── Forgot link ─────────────────────────────────────────── */
 .forgotLink {
   display: block;

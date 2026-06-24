@@ -2,6 +2,7 @@ import { signIn } from '@/app/actions'
 import styles from './page.module.css'
 import SplashScreen from './SplashScreen'
 import { SubmitButton } from './SubmitButton'
+import { PasswordInput } from './PasswordInput'
 import HeroSlides from './HeroSlides'
 
 export const metadata = { title: 'Sign In — Operation Equip' }
@@ -59,15 +60,7 @@ export default async function LoginPage({
             </div>
             <div className="field">
               <label className="label" htmlFor="password">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="input"
-                placeholder="••••••••"
-              />
+              <PasswordInput />
             </div>
             <SubmitButton />
             <a href="/forgot-password" className={styles.forgotLink}>
