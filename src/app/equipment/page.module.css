@@ -1,1 +1,45 @@
-/* Equipment list has no special layout beyond globals */
+/* ── Filter bar ──────────────────────────────────────────── */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  flex: 1 1 150px;
+}
+
+.filterSearch {
+  flex: 2 1 240px;
+}
+
+.filterField :global(.label) {
+  margin-bottom: 5px;
+}
+
+.filterActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 1px;
+}
+
+@media (max-width: 700px) {
+  .filterField,
+  .filterSearch {
+    flex-basis: 100%;
+  }
+
+  .filterActions {
+    width: 100%;
+  }
+}

@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { ROLE_PREVIEW_COOKIE } from '@/lib/role-preview'
 
 const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password']
 
@@ -66,6 +67,15 @@ export async function proxy(request: NextRequest) {
 
   // Role-based route guard: recipients only access /my-equipment and /support
   if (user && RECIPIENT_BLOCKED.some((p) => path.startsWith(p))) {
+    // An admin previewing as recipient gets the recipient's routes too. The
+    // cookie can only ever restrict access here, so trusting it is safe —
+    // getCurrentUserContext validates it against the real role.
+    if (request.cookies.get(ROLE_PREVIEW_COOKIE)?.value === 'recipient') {
+      return applySecurityHeaders(
+        NextResponse.redirect(new URL('/my-equipment', request.url))
+      )
+    }
+
     const { data: roles } = await supabase
       .from('user_roles')
       .select('role')

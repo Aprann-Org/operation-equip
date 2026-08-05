@@ -15,15 +15,18 @@ export async function changeStage(formData: FormData): Promise<{ error?: string 
 
   const { data: equip } = await supabase
     .from('equipment')
-    .select('stage, organization_id')
+    .select('stage, organization_id, date_received, date_sent')
     .eq('id', equipmentId)
     .single()
 
   if (!equip) return { error: 'Equipment not found' }
 
   const updateData: Record<string, unknown> = { stage: newStage, sub_status: null }
-  if (newStage === 'received') updateData.date_received = new Date().toISOString().split('T')[0]
-  if (newStage === 'distributed') updateData.date_sent = new Date().toISOString().split('T')[0]
+  // Stage milestones only *fill in* a missing date — re-entering a stage must not
+  // clobber a date that was already recorded (or corrected by hand).
+  const today = new Date().toISOString().split('T')[0]
+  if (newStage === 'received' && !equip.date_received) updateData.date_received = today
+  if (newStage === 'distributed' && !equip.date_sent) updateData.date_sent = today
   if (newStage === 'retired') {
     const retirementReason = (formData.get('retirement_reason') as string) || null
     if (!retirementReason) return { error: 'Retirement reason is required' }

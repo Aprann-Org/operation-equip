@@ -153,6 +153,51 @@ export const STAGE_LABELS: Record<EquipmentStage, string> = {
   retired: 'Retired',
 }
 
+/** Every stage, in lifecycle order — the two terminal stages follow the pipeline. */
+export const ALL_STAGES: EquipmentStage[] = [...STAGE_ORDER, 'in_support', 'retired']
+
+export const SUB_STATUSES: EquipmentSubStatus[] = [
+  'testing',
+  'repairing',
+  'awaiting_parts',
+  'awaiting_software',
+  'final_qa',
+  'blocked',
+]
+
+export const SUB_STATUS_LABELS: Record<EquipmentSubStatus, string> = {
+  testing: 'Testing',
+  repairing: 'Repairing',
+  awaiting_parts: 'Awaiting Parts',
+  awaiting_software: 'Awaiting Software',
+  final_qa: 'Final QA',
+  blocked: 'Blocked',
+}
+
+export const COSMETIC_CONDITIONS: CosmeticCondition[] = ['good', 'fair', 'poor']
+
+export const COSMETIC_CONDITION_LABELS: Record<CosmeticCondition, string> = {
+  good: 'Good',
+  fair: 'Fair',
+  poor: 'Poor',
+}
+
+export const RETIREMENT_REASONS: RetirementReason[] = [
+  'lost',
+  'broken',
+  'returned_to_donor',
+  'end_of_life',
+  'other',
+]
+
+export const RETIREMENT_REASON_LABELS: Record<RetirementReason, string> = {
+  lost: 'Lost',
+  broken: 'Broken beyond repair',
+  returned_to_donor: 'Returned to donor',
+  end_of_life: 'End of life',
+  other: 'Other',
+}
+
 export const STAGE_COLORS: Record<EquipmentStage, string> = {
   acquired: '#6b7280',
   received: '#2563eb',

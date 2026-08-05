@@ -1,0 +1,156 @@
+/* ── Sortable headers ────────────────────────────────────── */
+.sortLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sortLink:hover {
+  color: var(--text-secondary);
+}
+
+.sortIcon {
+  font-size: 8px;
+  opacity: 0.35;
+  line-height: 1;
+}
+
+.sortActive {
+  color: var(--blue);
+}
+
+.sortActive .sortIcon {
+  opacity: 1;
+}
+
+/* ── Row selection ───────────────────────────────────────── */
+.checkCell {
+  width: 34px;
+  padding-right: 0 !important;
+  text-align: center;
+  /* Shift-clicking a range otherwise highlights the rows in between */
+  user-select: none;
+}
+
+.checkCell input {
+  cursor: pointer;
+  accent-color: var(--blue);
+  margin: 0;
+  vertical-align: middle;
+}
+
+.rowSelected td {
+  background: var(--blue-light) !important;
+}
+
+.subStatus {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.sourceDetail {
+  display: block;
+  margin-top: 2px;
+  max-width: 220px;
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Bulk edit panel ─────────────────────────────────────── */
+.bulkBar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 1rem 1.25rem;
+  background: var(--blue-light);
+  border-bottom: 1px solid var(--border);
+  border-radius: 10px 10px 0 0;
+}
+
+.bulkHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.bulkCount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+.bulkHint {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.bulkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.bulkField {
+  display: flex;
+  flex-direction: column;
+}
+
+.bulkField :global(.label) {
+  margin-bottom: 4px;
+}
+
+.bulkFieldWide {
+  grid-column: 1 / -1;
+}
+
+.bulkCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.bulkCheckbox input {
+  accent-color: var(--blue);
+  margin: 0;
+  cursor: pointer;
+}
+
+.bulkFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.bulkSuccess {
+  margin: 1rem 1.25rem 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--green);
+  background: var(--green-light);
+  border-radius: 6px;
+}
+
+@media (max-width: 700px) {
+  .bulkHeader {
+    flex-wrap: wrap;
+  }
+
+  .bulkHint {
+    flex-basis: 100%;
+    order: 3;
+  }
+}

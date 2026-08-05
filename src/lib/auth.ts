@@ -1,11 +1,22 @@
 import { cache } from 'react'
+import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 import type { UserRole } from '@/lib/types'
+import {
+  ROLE_PREVIEW_COOKIE,
+  ROLE_PRIORITY,
+  isValidPreview,
+  previewableRolesFor,
+} from '@/lib/role-preview'
 
 export type UserContext = {
   userId: string
   email: string
-  role: UserRole
+  role: UserRole                // effective role — the previewed one while previewing
+  realRole: UserRole            // role actually granted in user_roles
+  previewRole: UserRole | null  // set while an admin is viewing as someone else
+  isPreviewingRole: boolean
+  previewableRoles: UserRole[]  // empty for non-admins
   organizationId: string | null
   organizationName: string | null
   isSuperAdmin: boolean
@@ -16,6 +27,7 @@ export type UserContext = {
   canManageEquipment: boolean  // tech, org_admin, super_admin
   canManageUsers: boolean      // org_admin, super_admin
   canManageSettings: boolean   // org_admin, super_admin
+  canManageOrganizations: boolean // org_admin, super_admin — matches the RLS insert/update policy
 }
 
 export const getCurrentUserContext = cache(async (): Promise<UserContext | null> => {
@@ -34,6 +46,10 @@ export const getCurrentUserContext = cache(async (): Promise<UserContext | null>
       userId: user.id,
       email: user.email ?? '',
       role: 'recipient',
+      realRole: 'recipient',
+      previewRole: null,
+      isPreviewingRole: false,
+      previewableRoles: [],
       organizationId: null,
       organizationName: null,
       isSuperAdmin: false,
@@ -44,13 +60,18 @@ export const getCurrentUserContext = cache(async (): Promise<UserContext | null>
       canManageEquipment: false,
       canManageUsers: false,
       canManageSettings: false,
+      canManageOrganizations: false,
     }
   }
 
-  const PRIORITY: UserRole[] = ['super_admin', 'org_admin', 'technician', 'recipient']
-  const topRole: UserRole = PRIORITY.find(p => roles.some(r => r.role === p)) ?? 'recipient'
+  const topRole: UserRole = ROLE_PRIORITY.find(p => roles.some(r => r.role === p)) ?? 'recipient'
   const primaryRecord = roles.find(r => r.role === topRole)
   const orgId = primaryRecord?.organization_id ?? null
+
+  // Role preview: only ever a downgrade, and only for roles the real role outranks
+  const requestedPreview = (await cookies()).get(ROLE_PREVIEW_COOKIE)?.value
+  const previewRole = isValidPreview(topRole, requestedPreview) ? requestedPreview : null
+  const effectiveRole = previewRole ?? topRole
 
   let orgName: string | null = null
   if (orgId) {
@@ -65,16 +86,21 @@ export const getCurrentUserContext = cache(async (): Promise<UserContext | null>
   return {
     userId: user.id,
     email: user.email ?? '',
-    role: topRole,
+    role: effectiveRole,
+    realRole: topRole,
+    previewRole,
+    isPreviewingRole: previewRole !== null,
+    previewableRoles: previewableRolesFor(topRole),
     organizationId: orgId,
     organizationName: orgName,
-    isSuperAdmin: topRole === 'super_admin',
-    isOrgAdmin: topRole === 'org_admin',
-    isTechnician: topRole === 'technician',
-    isRecipient: topRole === 'recipient',
+    isSuperAdmin: effectiveRole === 'super_admin',
+    isOrgAdmin: effectiveRole === 'org_admin',
+    isTechnician: effectiveRole === 'technician',
+    isRecipient: effectiveRole === 'recipient',
     noRole: false,
-    canManageEquipment: topRole !== 'recipient',
-    canManageUsers: topRole === 'super_admin' || topRole === 'org_admin',
-    canManageSettings: topRole === 'super_admin' || topRole === 'org_admin',
+    canManageEquipment: effectiveRole !== 'recipient',
+    canManageUsers: effectiveRole === 'super_admin' || effectiveRole === 'org_admin',
+    canManageSettings: effectiveRole === 'super_admin' || effectiveRole === 'org_admin',
+    canManageOrganizations: effectiveRole === 'super_admin' || effectiveRole === 'org_admin',
   }
 })

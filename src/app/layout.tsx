@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getCurrentUserContext } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import RolePreviewBanner from '@/components/RolePreviewBanner'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -24,7 +25,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body>
-        {ctx && !ctx.noRole && <Navbar ctx={ctx} />}
+        {ctx && <Navbar ctx={ctx} />}
+        {ctx && <RolePreviewBanner ctx={ctx} />}
         {children}
       </body>
     </html>

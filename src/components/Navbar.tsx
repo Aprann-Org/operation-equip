@@ -1,13 +1,8 @@
 import { signOut } from '@/app/actions'
+import RoleSwitcher from '@/components/RoleSwitcher'
+import { ROLE_LABELS } from '@/lib/role-preview'
 import type { UserContext } from '@/lib/auth'
 import styles from './Navbar.module.css'
-
-const ROLE_LABELS: Record<string, string> = {
-  super_admin: 'Super Admin',
-  org_admin: 'Admin',
-  technician: 'Technician',
-  recipient: 'Recipient',
-}
 
 type Props = { ctx: UserContext }
 
@@ -41,6 +36,13 @@ export default function Navbar({ ctx }: Props) {
       </div>
 
       <div className={styles.right}>
+        {ctx.previewableRoles.length > 0 && (
+          <RoleSwitcher
+            realRole={ctx.realRole}
+            currentRole={ctx.role}
+            options={ctx.previewableRoles}
+          />
+        )}
         <div className={styles.userInfo}>
           <span className={styles.userEmail}>{ctx.email}</span>
           {ctx.organizationName && (
