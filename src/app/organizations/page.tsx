@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { getCurrentUserContext } from '@/lib/auth'
 import type { OrgType } from '@/lib/types'
 
 const TYPE_FILTER: { key: string; label: string }[] = [
@@ -15,7 +16,8 @@ export default async function OrganizationsPage({
   searchParams: Promise<{ type?: string }>
 }) {
   const { type } = await searchParams
-  const supabase = await createClient()
+  const [supabase, ctx] = await Promise.all([createClient(), getCurrentUserContext()])
+  const canAdd = ctx?.canManageOrganizations ?? false
 
   let query = supabase
     .from('organizations')
@@ -33,7 +35,9 @@ export default async function OrganizationsPage({
           <h1 className="page-title">Organizations</h1>
           <p className="page-subtitle">{orgs?.length ?? 0} organization{orgs?.length !== 1 ? 's' : ''}</p>
         </div>
-        <a href="/organizations/new" className="btn btn-primary">+ Add Organization</a>
+        {canAdd && (
+          <a href="/organizations/new" className="btn btn-primary">+ Add Organization</a>
+        )}
       </div>
 
       <div className="tabs">
@@ -55,9 +59,11 @@ export default async function OrganizationsPage({
           <div className="empty-state">
             <span className="empty-icon">🏢</span>
             <span>No organizations found.</span>
-            <a href="/organizations/new" className="btn btn-primary btn-sm" style={{ marginTop: 8 }}>
-              Add first organization
-            </a>
+            {canAdd && (
+              <a href="/organizations/new" className="btn btn-primary btn-sm" style={{ marginTop: 8 }}>
+                Add first organization
+              </a>
+            )}
           </div>
         ) : (
           <div className="table-wrapper">

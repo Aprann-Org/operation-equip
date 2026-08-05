@@ -1,8 +1,13 @@
+import { redirect } from 'next/navigation'
+import { getCurrentUserContext } from '@/lib/auth'
 import { OrgForm } from './OrgForm'
 
 export const metadata = { title: 'Add Organization — Operation Equip' }
 
-export default function NewOrganizationPage() {
+export default async function NewOrganizationPage() {
+  const ctx = await getCurrentUserContext()
+  if (!ctx?.canManageOrganizations) redirect('/organizations')
+
   return (
     <div className="page-container" style={{ maxWidth: 800 }}>
       <div className="page-header">

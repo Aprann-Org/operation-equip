@@ -1,0 +1,33 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 7px 2rem;
+  background: var(--amber-light);
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--amber);
+}
+
+.text { font-weight: 500; }
+
+.note {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.exitBtn {
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.exitBtn:hover { background: #f9fafb; }
