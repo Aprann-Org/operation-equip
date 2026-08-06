@@ -129,26 +129,10 @@
   flex-direction: column;
   gap: 6px;
   border-right: 1px solid var(--border);
-  position: relative;
 }
 
 .pipelineStage:last-child {
   border-right: none;
-}
-
-.pipelineStage::after {
-  content: '→';
-  position: absolute;
-  right: -10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  color: var(--text-muted);
-  z-index: 1;
-}
-
-.pipelineStage:last-child::after {
-  display: none;
 }
 
 .stageDot {
@@ -286,10 +270,6 @@
     flex-direction: row;
     align-items: center;
     gap: 12px;
-  }
-
-  .pipelineStage::after {
-    display: none;
   }
 
   .bottomGrid {
