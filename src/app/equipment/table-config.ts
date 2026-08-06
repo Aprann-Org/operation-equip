@@ -7,12 +7,11 @@
 export type SortKey =
   | 'internal_id'
   | 'make'
-  | 'type'
   | 'stage'
+  | 'tech'
   | 'condition'
   | 'donor'
   | 'dest'
-  | 'date_acquired'
   | 'date_received'
   | 'date_sent'
 
@@ -33,12 +32,11 @@ export type SortColumn = {
 export const SORT_COLUMNS: SortColumn[] = [
   { key: 'internal_id', label: 'ID', column: 'internal_id', defaultDir: 'asc' },
   { key: 'make', label: 'Make / Model', column: 'make', defaultDir: 'asc' },
-  { key: 'type', label: 'Type', column: null, defaultDir: 'asc' },
   { key: 'stage', label: 'Stage', column: 'stage', defaultDir: 'asc' },
+  { key: 'tech', label: 'Technician', column: null, defaultDir: 'asc' },
   { key: 'condition', label: 'Condition', column: 'cosmetic_condition', defaultDir: 'asc' },
   { key: 'donor', label: 'Donor / Source', column: null, defaultDir: 'asc' },
   { key: 'dest', label: 'Destination', column: null, defaultDir: 'asc' },
-  { key: 'date_acquired', label: 'Acquired', column: 'date_acquired', defaultDir: 'desc' },
   { key: 'date_received', label: 'Received', column: 'date_received', defaultDir: 'desc' },
   { key: 'date_sent', label: 'Sent', column: 'date_sent', defaultDir: 'desc' },
 ]

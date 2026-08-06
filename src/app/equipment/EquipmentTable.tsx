@@ -22,14 +22,16 @@ export type EquipmentRow = {
   internalId: string
   make: string | null
   model: string | null
-  typeName: string | null
   stage: string
   subStatus: string | null
+  /** Display name of the assigned technician; null when nobody is assigned. */
+  techName: string | null
+  /** True when a technician is assigned but their profile isn't readable under RLS. */
+  techHidden: boolean
   condition: string | null
   donorName: string | null
   sourceDetail: string | null
   destName: string | null
-  dateAcquired: string | null
   dateReceived: string | null
   dateSent: string | null
 }
@@ -397,7 +399,6 @@ export function EquipmentTable({
                       ? [row.make, row.model].filter(Boolean).join(' ')
                       : <span className="table-muted">—</span>}
                   </td>
-                  <td className="table-muted">{row.typeName ?? '—'}</td>
                   <td>
                     <span className={`badge badge-${row.stage}`}>
                       {STAGE_LABELS[row.stage as EquipmentStage] ?? row.stage}
@@ -406,6 +407,15 @@ export function EquipmentTable({
                       <span className={styles.subStatus}>
                         {SUB_STATUS_LABELS[row.subStatus as keyof typeof SUB_STATUS_LABELS] ?? row.subStatus}
                       </span>
+                    )}
+                  </td>
+                  <td className="table-muted">
+                    {row.techName ? (
+                      <span className={styles.techName}>{row.techName}</span>
+                    ) : row.techHidden ? (
+                      <span title="Assigned to a user whose profile you can't view">Assigned</span>
+                    ) : (
+                      <span className={styles.unassigned}>Unassigned</span>
                     )}
                   </td>
                   <td>
@@ -420,7 +430,6 @@ export function EquipmentTable({
                     )}
                   </td>
                   <td className="table-muted">{row.destName ?? '—'}</td>
-                  <td className="table-muted">{formatDate(row.dateAcquired) ?? '—'}</td>
                   <td className="table-muted">{formatDate(row.dateReceived) ?? '—'}</td>
                   <td className="table-muted">{formatDate(row.dateSent) ?? '—'}</td>
                 </tr>

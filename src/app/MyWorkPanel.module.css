@@ -1,0 +1,161 @@
+/* Deliberately louder than the other dashboard cards — this is the first thing
+   a technician should land on. */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--blue);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgb(37 99 235 / 8%);
+  overflow: hidden;
+}
+
+.panel.urgent {
+  border-color: var(--red);
+  box-shadow: 0 1px 3px rgb(220 38 38 / 10%);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  background: var(--blue-light);
+  border-bottom: 1px solid var(--border);
+}
+
+.panel.urgent .header { background: var(--red-light); }
+
+.headerLeft { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.summary { font-size: 13px; color: var(--text-secondary); }
+
+.overdueChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: var(--red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* ── Preview rows ────────────────────────────────────────── */
+.list { display: flex; flex-direction: column; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #f3f4f6;
+  border-left: 3px solid transparent;
+  transition: background 0.15s;
+}
+
+.item:hover { background: #fafafa; }
+.item:last-child { border-bottom: none; }
+
+.edge_overdue { border-left-color: var(--red); }
+.edge_soon    { border-left-color: var(--amber); }
+
+.itemMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+
+.itemTop { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+.deviceName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.internalId {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.due { font-weight: 600; }
+.overdue { color: var(--red); }
+.soon    { color: var(--amber); }
+.later   { color: var(--text-secondary); }
+.none    { color: var(--text-muted); }
+
+/* ── QA progress ─────────────────────────────────────────── */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+
+.progressFill { height: 100%; border-radius: 4px; }
+
+.progressText {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.chevron { color: var(--text-muted); font-size: 14px; flex-shrink: 0; }
+
+/* ── Footer ──────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: #fafafa;
+}
+
+.footerNote { font-size: 12px; color: var(--text-muted); }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 2rem 1.25rem;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.emptyIcon { font-size: 26px; opacity: 0.5; }
+
+@media (max-width: 700px) {
+  .progress { display: none; }
+}

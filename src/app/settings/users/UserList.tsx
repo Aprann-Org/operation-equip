@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { changeUserRole, removeUserFromOrg, inviteUser } from './actions'
+import { changeUserRole, removeUserFromOrg, inviteUser, grantPendingUserRole } from './actions'
 import styles from './UserList.module.css'
 
 type OrgMember = {
@@ -11,6 +11,14 @@ type OrgMember = {
   email: string
   role: string
   status: string
+}
+
+type PendingUser = {
+  userId: string
+  firstName: string
+  lastName: string
+  email: string
+  signedUpAt: string
 }
 
 const ASSIGNABLE_ROLES = [
@@ -80,6 +88,66 @@ function MemberRow({ member: m }: { member: OrgMember }) {
         <p className="form-error" style={{ gridColumn: '1/-1' }}>
           {roleState.error ?? removeState.error}
         </p>
+      )}
+    </div>
+  )
+}
+
+export function PendingList({ users }: { users: PendingUser[] }) {
+  return (
+    <div className={styles.list}>
+      {users.map(u => (
+        <PendingRow key={u.userId} user={u} />
+      ))}
+    </div>
+  )
+}
+
+function PendingRow({ user: u }: { user: PendingUser }) {
+  const [state, formAction, isPending] = useActionState(grantPendingUserRole, {
+    error: null,
+    success: null,
+  })
+
+  const displayName = `${u.firstName} ${u.lastName}`.trim() || u.email
+  const signedUp = new Date(u.signedUpAt).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
+  return (
+    <div className={styles.row}>
+      <div className={styles.identity}>
+        <span className={styles.name}>{displayName}</span>
+        <span className={styles.email}>{u.email}</span>
+      </div>
+
+      <div className={styles.actions}>
+        <span className={styles.signedUp}>Signed up {signedUp}</span>
+
+        <form action={formAction} className={styles.roleForm}>
+          <input type="hidden" name="user_id" value={u.userId} />
+          <select
+            name="role"
+            required
+            defaultValue=""
+            className="select"
+            style={{ fontSize: 13, padding: '5px 8px' }}
+          >
+            <option value="" disabled>Choose a role…</option>
+            {ASSIGNABLE_ROLES.map(r => (
+              <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
+          </select>
+          <button type="submit" disabled={isPending} className="btn btn-primary btn-sm">
+            {isPending ? '…' : 'Grant access'}
+          </button>
+        </form>
+      </div>
+
+      {state.error && (
+        <p className="form-error" style={{ gridColumn: '1/-1' }}>{state.error}</p>
       )}
     </div>
   )

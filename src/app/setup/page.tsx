@@ -1,9 +1,8 @@
 import { getCurrentUserContext } from '@/lib/auth'
 import { signOut } from '@/app/actions'
-import { UuidField } from './UuidField'
 import styles from './page.module.css'
 
-export const metadata = { title: 'Account Setup — Operation Equip' }
+export const metadata = { title: 'Pending Approval — Operation Equip' }
 
 export default async function SetupPage() {
   const ctx = await getCurrentUserContext()
@@ -16,39 +15,36 @@ export default async function SetupPage() {
           <span className={styles.brandName}>Operation Equip</span>
         </div>
 
-        <h1 className={styles.title}>Account not configured</h1>
+        <h1 className={styles.title}>Your account is awaiting approval</h1>
         <p className={styles.subtitle}>
-          You&apos;re signed in as <strong>{ctx?.email}</strong>, but this account hasn&apos;t been
-          assigned a role yet. Ask your Organization Admin to invite you via
-          <strong> Settings → Users &amp; Roles</strong>, or run the SQL below in
-          the <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className={styles.link}>Supabase SQL Editor</a>.
+          Thanks for signing up, <strong>{ctx?.email}</strong>. Your account has been created
+          and is now in the queue for an administrator to review. Once they grant you access
+          you&apos;ll be able to sign in and get started — no further action needed on your end.
         </p>
 
-        <div className={styles.sqlBlock}>
-          <p className={styles.sqlLabel}>Your user ID — copy this exact value</p>
-          <UuidField value={ctx?.userId ?? ''} />
+        <div className={styles.notice}>
+          <p className={styles.noticeTitle}>What happens next</p>
+          <ol className={styles.steps}>
+            <li>An administrator sees your account in Users &amp; Roles.</li>
+            <li>They assign your role and organization.</li>
+            <li>You sign in again and land straight in the app.</li>
+          </ol>
         </div>
 
-        <div className={styles.sqlBlock}>
-          <p className={styles.sqlLabel}>Assign yourself as Org Admin of Aprann</p>
-          <pre className={styles.sql}>{`INSERT INTO user_roles (user_id, organization_id, role)
-SELECT
-  '${ctx?.userId}',
-  id,
-  'org_admin'
-FROM organizations
-WHERE name = 'Aprann'
-ON CONFLICT DO NOTHING;`}</pre>
-          <p className={styles.sqlHint}>
-            Run this in your Supabase project&apos;s SQL Editor, then sign out and sign back in.
-          </p>
+        <div className={styles.buttonRow}>
+          <a href="/" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+            Check again
+          </a>
+          <form action={signOut} style={{ flex: 1 }}>
+            <button
+              type="submit"
+              className="btn btn-secondary"
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              Sign out
+            </button>
+          </form>
         </div>
-
-        <form action={signOut} style={{ marginTop: 8 }}>
-          <button type="submit" className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-            Sign out
-          </button>
-        </form>
       </div>
     </div>
   )

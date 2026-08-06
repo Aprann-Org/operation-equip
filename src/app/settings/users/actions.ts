@@ -65,22 +65,60 @@ export async function changeUserRole(formData: FormData): Promise<{ error?: stri
   const newRole = formData.get('role') as UserRole
   const orgId = ctx.organizationId
 
-  if (!orgId && !ctx.isSuperAdmin) return { error: 'No organization found' }
+  if (!orgId) return { error: 'No organization found' }
 
   const supabase = await createClient()
 
-  // Upsert: update existing role in this org, or insert if missing
-  const { error } = await supabase
-    .from('user_roles')
-    .upsert(
-      { user_id: targetUserId, organization_id: orgId, role: newRole },
-      { onConflict: 'user_id,organization_id,role' }
-    )
+  // Replaces whatever role the user held in this org. An upsert can't do
+  // this — user_roles is unique on (user_id, organization_id, role), so a
+  // different role never conflicts and the user would end up holding both.
+  const { error } = await supabase.rpc('set_user_role', {
+    p_user_id: targetUserId,
+    p_organization_id: orgId,
+    p_role: newRole,
+  })
 
   if (error) return { error: error.message }
 
   revalidatePath('/settings/users')
   return {}
+}
+
+/**
+ * Grant a role to an account that signed in but has no role anywhere —
+ * i.e. someone sitting in the pending queue. Same RPC as a role change;
+ * separated so the UI can report "granted access" rather than "updated".
+ */
+export async function grantPendingUserRole(
+  _prev: { error: string | null; success: string | null },
+  formData: FormData
+): Promise<{ error: string | null; success: string | null }> {
+  const ctx = await assertAdmin().catch(() => null)
+  if (!ctx) return { error: 'Permission denied', success: null }
+
+  const targetUserId = formData.get('user_id') as string
+  const role = formData.get('role') as UserRole
+  const orgId = ctx.organizationId
+
+  if (!targetUserId || !role) return { error: 'User and role are required', success: null }
+  if (!orgId) {
+    return {
+      error: 'Your account is not attached to an organization, so it cannot grant access.',
+      success: null,
+    }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('set_user_role', {
+    p_user_id: targetUserId,
+    p_organization_id: orgId,
+    p_role: role,
+  })
+
+  if (error) return { error: error.message, success: null }
+
+  revalidatePath('/settings/users')
+  return { error: null, success: 'Access granted' }
 }
 
 export async function removeUserFromOrg(formData: FormData): Promise<{ error?: string }> {

@@ -1,4 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
+import { getCurrentUserContext } from '@/lib/auth'
+import { getMyWorkItems } from './my-work/data'
+import { MyWorkPanel } from './MyWorkPanel'
 import { STAGE_ORDER, STAGE_LABELS, STAGE_COLORS } from '@/lib/types'
 import styles from './page.module.css'
 
@@ -36,7 +39,15 @@ async function getStats() {
 }
 
 export default async function DashboardPage() {
-  const stats = await getStats()
+  const ctx = await getCurrentUserContext()
+
+  // Only people who can be assigned equipment have a bench to show.
+  const [stats, work] = await Promise.all([
+    getStats(),
+    ctx?.canManageEquipment
+      ? getMyWorkItems(ctx.userId)
+      : Promise.resolve({ items: [], error: null }),
+  ])
 
   return (
     <div className={styles.page}>
@@ -53,6 +64,14 @@ export default async function DashboardPage() {
       </div>
 
       <main className={styles.main}>
+        {/* My Work — first thing on the page for anyone who works the bench */}
+        {ctx?.canManageEquipment && (
+          <section>
+            <p className="section-label">Assigned to me</p>
+            <MyWorkPanel items={work.items} />
+          </section>
+        )}
+
         {/* Stats */}
         <section>
           <p className="section-label">Overview</p>
@@ -149,6 +168,7 @@ export default async function DashboardPage() {
             </div>
             <div className={styles.quickActions}>
               {[
+                { icon: '🔧', label: 'My work queue', href: '/my-work' },
                 { icon: '➕', label: 'Add new equipment', href: '/equipment/new' },
                 { icon: '🏢', label: 'Manage organizations', href: '/organizations' },
                 {

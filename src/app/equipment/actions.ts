@@ -289,6 +289,7 @@ export async function bulkUpdateEquipment(
   revalidatePath('/equipment')
   revalidatePath('/equipment/[id]', 'page')
   revalidatePath('/my-equipment')
+  revalidatePath('/my-work')
   revalidatePath('/')
 
   const count = updatedIds.size

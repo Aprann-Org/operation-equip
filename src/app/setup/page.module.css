@@ -65,6 +65,36 @@
 .link { color: var(--blue); }
 .link:hover { text-decoration: underline; }
 
+.notice {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 1.5rem;
+}
+
+.noticeTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.buttonRow {
+  display: flex;
+  gap: 10px;
+}
+
 .sqlBlock {
   background: #f8fafc;
   border: 1px solid var(--border);

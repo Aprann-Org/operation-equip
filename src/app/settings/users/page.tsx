@@ -1,6 +1,6 @@
 import { getCurrentUserContext } from '@/lib/auth'
 import { createClient } from '@/utils/supabase/server'
-import { UserList, InviteForm } from './UserList'
+import { UserList, InviteForm, PendingList } from './UserList'
 
 export const metadata = { title: 'Users & Roles — Settings' }
 
@@ -14,6 +14,20 @@ export default async function UsersSettingsPage() {
     .select('role, user_id, users!user_id ( id, first_name, last_name, email, status )')
     .eq('organization_id', ctx!.organizationId as string)
     .order('role')
+
+  // Accounts that have signed up but hold no role anywhere yet. The RPC
+  // returns an empty set for non-admins, so no extra guard is needed here.
+  const { data: pendingRows } = await supabase.rpc('pending_users')
+
+  const pending = (pendingRows ?? []).map((u: {
+    id: string; first_name: string; last_name: string; email: string; created_at: string
+  }) => ({
+    userId: u.id,
+    firstName: u.first_name ?? '',
+    lastName: u.last_name ?? '',
+    email: u.email,
+    signedUpAt: u.created_at,
+  }))
 
   const members = (roleRows ?? []).map(r => {
     const u = r.users as unknown as {
@@ -41,6 +55,23 @@ export default async function UsersSettingsPage() {
           </p>
         </div>
       </div>
+
+      {pending.length > 0 && (
+        <div className="card" style={{ marginBottom: '1.25rem' }}>
+          <div className="card-header">
+            <span className="card-title">Awaiting access</span>
+            <span className="badge badge-in_process">{pending.length} pending</span>
+          </div>
+          <div className="card-body">
+            <p className="table-muted" style={{ fontSize: 13, marginBottom: 12 }}>
+              These people have created an account but don&apos;t have a role yet, so they
+              can&apos;t use the app. Pick a role to give them access to{' '}
+              {ctx!.organizationName ?? 'your organization'}.
+            </p>
+            <PendingList users={pending} />
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <div className="card-header">

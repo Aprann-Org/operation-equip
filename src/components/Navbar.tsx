@@ -24,6 +24,7 @@ export default function Navbar({ ctx }: Props) {
           ) : (
             <>
               <li><a href="/">Dashboard</a></li>
+              <li><a href="/my-work">My Work</a></li>
               <li><a href="/equipment">Equipment</a></li>
               <li><a href="/organizations">Organizations</a></li>
               <li><a href="/support">Support</a></li>

@@ -37,9 +37,14 @@ type SearchParams = {
 
 /** Columns whose value comes from a join, so they can't be ordered in Postgres. */
 const JOINED_SORT_VALUES: Record<string, (r: EquipmentRow) => string | null> = {
-  type: (r) => r.typeName,
   donor: (r) => r.donorName,
   dest: (r) => r.destName,
+  tech: (r) => r.techName,
+}
+
+/** Prefer a real name, fall back to the email so a row is never blank. */
+function displayName(u: { first_name: string; last_name: string; email: string }): string {
+  return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email
 }
 
 /** Only pass through values the enum/uuid columns can actually hold. */
@@ -90,10 +95,11 @@ export default async function EquipmentPage({
     .from('equipment')
     .select(`
       id, internal_id, make, model, stage, sub_status, cosmetic_condition,
-      source_detail, date_acquired, date_received, date_sent, created_at,
-      equipment_types!equipment_type_id ( name ),
+      source_detail, date_received, date_sent, created_at,
+      assigned_technician_id,
       donor_org:organizations!donor_organization_id ( name ),
-      destination_org:organizations!destination_organization_id ( name )
+      destination_org:organizations!destination_organization_id ( name ),
+      assigned_tech:users!assigned_technician_id ( first_name, last_name, email )
     `)
 
   if (stage) query = query.eq('stage', stage)
@@ -140,22 +146,31 @@ export default async function EquipmentPage({
         .in('role', ['technician', 'org_admin']),
     ])
 
-  let rows: EquipmentRow[] = (equipment ?? []).map((e) => ({
-    id: e.id,
-    internalId: e.internal_id,
-    make: e.make,
-    model: e.model,
-    typeName: (e.equipment_types as unknown as { name: string } | null)?.name ?? null,
-    stage: e.stage,
-    subStatus: e.sub_status,
-    condition: e.cosmetic_condition,
-    donorName: (e.donor_org as unknown as { name: string } | null)?.name ?? null,
-    sourceDetail: e.source_detail,
-    destName: (e.destination_org as unknown as { name: string } | null)?.name ?? null,
-    dateAcquired: e.date_acquired,
-    dateReceived: e.date_received,
-    dateSent: e.date_sent,
-  }))
+  let rows: EquipmentRow[] = (equipment ?? []).map((e) => {
+    // The users table is readable per RLS — own profile, plus org members for
+    // admins. A plain technician can hold an assignment we can't name, so the
+    // id is what decides "unassigned", not the presence of the joined row.
+    const tech = e.assigned_tech as unknown as
+      | { first_name: string; last_name: string; email: string }
+      | null
+
+    return {
+      id: e.id,
+      internalId: e.internal_id,
+      make: e.make,
+      model: e.model,
+      stage: e.stage,
+      subStatus: e.sub_status,
+      techName: tech ? displayName(tech) : null,
+      techHidden: !!e.assigned_technician_id && !tech,
+      condition: e.cosmetic_condition,
+      donorName: (e.donor_org as unknown as { name: string } | null)?.name ?? null,
+      sourceDetail: e.source_detail,
+      destName: (e.destination_org as unknown as { name: string } | null)?.name ?? null,
+      dateReceived: e.date_received,
+      dateSent: e.date_sent,
+    }
+  })
 
   // Joined columns can't be ordered in the equipment query, so sort them here.
   // The list is unpaginated, so this sees every row the filters returned.
@@ -190,8 +205,7 @@ export default async function EquipmentPage({
           email: string
         } | null
         if (!u) return []
-        const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email
-        return [[u.id, { id: u.id, name }] as const]
+        return [[u.id, { id: u.id, name: displayName(u) }] as const]
       })
     ).values()
   ).sort((a, b) => a.name.localeCompare(b.name))

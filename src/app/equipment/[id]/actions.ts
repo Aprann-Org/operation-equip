@@ -55,6 +55,7 @@ export async function changeStage(formData: FormData): Promise<{ error?: string 
 
   revalidatePath(`/equipment/${equipmentId}`)
   revalidatePath('/equipment')
+  revalidatePath('/my-work')
   revalidatePath('/')
   return {}
 }
@@ -77,6 +78,7 @@ export async function changeSubStatus(formData: FormData): Promise<{ error?: str
   if (!updated?.length) return { error: 'Permission denied' }
 
   revalidatePath(`/equipment/${equipmentId}`)
+  revalidatePath('/my-work')
   return {}
 }
 
@@ -154,6 +156,7 @@ export async function saveChecklistResult(formData: FormData): Promise<{ error?:
   if (error) return { error: error.message }
 
   revalidatePath(`/equipment/${equipmentId}`)
+  revalidatePath('/my-work')
   return {}
 }
 
@@ -178,6 +181,7 @@ export async function updateDestination(formData: FormData): Promise<{ error?: s
   if (!updated?.length) return { error: 'Permission denied' }
 
   revalidatePath(`/equipment/${equipmentId}`)
+  revalidatePath('/my-work')
   return {}
 }
 
@@ -197,6 +201,7 @@ export async function assignTechnician(formData: FormData): Promise<void> {
     .select('id')
 
   revalidatePath(`/equipment/${equipmentId}`)
+  revalidatePath('/my-work')
 }
 
 export async function createBatteryReport(

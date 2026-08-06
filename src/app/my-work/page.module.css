@@ -1,0 +1,209 @@
+/* ── Summary tiles ───────────────────────────────────────── */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.summaryTile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+a.summaryTile:hover { border-color: var(--blue); background: var(--blue-light); }
+
+.summaryValue {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.summaryLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ── Urgency tones ───────────────────────────────────────── */
+.overdue { color: var(--red); }
+.soon    { color: var(--amber); }
+.later   { color: var(--text-secondary); }
+.none    { color: var(--text-muted); }
+.blocked { color: var(--red); }
+
+.tabCount {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 20px;
+  background: #f3f4f6;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Queue rows ──────────────────────────────────────────── */
+.queue {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 10px;
+}
+
+/* Left edge carries the urgency at a glance while scanning the list */
+.edge_overdue { border-left-color: var(--red); }
+.edge_soon    { border-left-color: var(--amber); }
+.edge_later   { border-left-color: var(--border); }
+.edge_none    { border-left-color: var(--border); }
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rowTop {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.identity {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.deviceName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.deviceName:hover { color: var(--blue); }
+
+.internalId {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.due { font-weight: 600; }
+.dueDate { font-weight: 400; opacity: 0.75; }
+
+.threadLink { color: var(--blue); font-weight: 500; }
+.threadLink:hover { text-decoration: underline; }
+
+/* ── QA progress ─────────────────────────────────────────── */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 340px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.2s;
+}
+
+.progressText {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Row actions ─────────────────────────────────────────── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.subStatusForm { display: flex; gap: 6px; align-items: center; }
+
+.subStatusSelect { width: auto; min-width: 150px; padding: 5px 9px; font-size: 13px; }
+
+.releaseForm { display: flex; }
+
+.linkBtn {
+  background: none;
+  border: none;
+  padding: 5px 4px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.linkBtn:hover:not(:disabled) { color: var(--red); text-decoration: underline; }
+.linkBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.actionError { flex-basis: 100%; margin: 0; text-align: right; }
+
+/* ── Unassigned queue ────────────────────────────────────── */
+.claimSection { margin-top: 1.75rem; }
+
+.claimForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.claimError { font-size: 12px; color: var(--red); }
+
+@media (max-width: 860px) {
+  .row { flex-direction: column; gap: 0.9rem; }
+  .actions { justify-content: flex-start; width: 100%; }
+  .actionError { text-align: left; }
+  .progress { max-width: none; }
+}

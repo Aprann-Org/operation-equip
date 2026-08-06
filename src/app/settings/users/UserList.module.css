@@ -19,6 +19,8 @@
 
 .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
+.signedUp { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
 .roleForm { display: flex; align-items: center; gap: 6px; }
 
 .inviteBox {

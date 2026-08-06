@@ -52,6 +52,19 @@
   color: var(--text-muted);
 }
 
+/* An assigned name is real content, not metadata — it reads at full strength
+   while "Unassigned" stays quiet so a claimed device stands out when scanning. */
+.techName {
+  color: var(--text-primary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.unassigned {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .sourceDetail {
   display: block;
   margin-top: 2px;
