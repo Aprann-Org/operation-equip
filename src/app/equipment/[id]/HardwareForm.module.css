@@ -1,0 +1,42 @@
+.editSection {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.editSummary {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.editSummary::-webkit-details-marker { display: none; }
+
+.editSummary::before {
+  content: '✎ ';
+}
+
+.editSummary:hover { background: var(--blue-light); }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  background: #fafafa;
+}
+
+.success {
+  margin-bottom: 1rem;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--green);
+  background: var(--green-light);
+  border-radius: 6px;
+}

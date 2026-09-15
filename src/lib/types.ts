@@ -19,6 +19,7 @@ export type EquipmentSubStatus =
   | 'blocked'
 
 export type CosmeticCondition = 'good' | 'fair' | 'poor'
+export type DiskType = 'ssd' | 'hdd' | 'nvme'
 export type RetirementReason = 'lost' | 'broken' | 'returned_to_donor' | 'end_of_life' | 'other'
 export type NoteVisibility = 'internal' | 'recipient_visible'
 export type SupportThreadStatus = 'open' | 'awaiting_recipient' | 'awaiting_tech' | 'resolved' | 'closed'
@@ -84,6 +85,18 @@ export type StageHistory = {
   equipment_id: string
   from_stage: EquipmentStage | null
   to_stage: EquipmentStage
+  occurred_at: string
+  reason: string | null
+  user: { first_name: string; last_name: string } | null
+}
+
+/** One field's worth of a hardware spec edit — see equipment_spec_history. */
+export type SpecHistory = {
+  id: string
+  equipment_id: string
+  field: string
+  from_value: string | null
+  to_value: string | null
   occurred_at: string
   reason: string | null
   user: { first_name: string; last_name: string } | null
@@ -180,6 +193,31 @@ export const COSMETIC_CONDITION_LABELS: Record<CosmeticCondition, string> = {
   good: 'Good',
   fair: 'Fair',
   poor: 'Poor',
+}
+
+export const DISK_TYPES: DiskType[] = ['ssd', 'hdd', 'nvme']
+
+export const DISK_TYPE_LABELS: Record<DiskType, string> = {
+  ssd: 'SSD',
+  hdd: 'HDD',
+  nvme: 'NVMe',
+}
+
+/**
+ * The hardware fields `updateHardware` is allowed to change, labelled for the
+ * edit form and the change history. Keys are exactly what
+ * equipment_spec_history.field stores: a column name, or `specs.<key>` for a
+ * field that lives inside the specs JSONB.
+ */
+export const HARDWARE_FIELD_LABELS: Record<string, string> = {
+  make: 'Make',
+  model: 'Model',
+  processor: 'Processor',
+  ram_gb: 'RAM (GB)',
+  disk_capacity_gb: 'Disk Capacity (GB)',
+  'specs.disk_type': 'Disk Type',
+  'specs.screen_size_in': 'Screen Size (in)',
+  'specs.os': 'Operating System',
 }
 
 export const RETIREMENT_REASONS: RetirementReason[] = [

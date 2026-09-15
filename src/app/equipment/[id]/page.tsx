@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import { STAGE_LABELS, STAGE_LABELS as SL, type EquipmentStage, type EquipmentSubStatus } from '@/lib/types'
+import { DISK_TYPE_LABELS, HARDWARE_FIELD_LABELS, STAGE_LABELS, STAGE_LABELS as SL, type DiskType, type EquipmentStage, type EquipmentSubStatus } from '@/lib/types'
 import { StagePanel } from './StagePanel'
 import { ChecklistPanel } from './ChecklistPanel'
 import { NotesPanel } from './NotesPanel'
 import { BatteryPanel } from './BatteryPanel'
 import { DestinationForm } from './DestinationForm'
+import { HardwareForm } from './HardwareForm'
 import { assignTechnician } from './actions'
 import { getCurrentUserContext } from '@/lib/auth'
 import styles from './page.module.css'
@@ -54,8 +55,8 @@ export default async function EquipmentDetailPage({
 
   const equipType = equip.equipment_type as { id: string; name: string } | null
 
-  // Parallel fetches: checklist, checklist results, battery reports, recipient orgs, org users
-  const [checklistRes, checklistResultsRes, batteryRes, recipientOrgsRes, orgUsersRes, techRolesRes] = await Promise.all([
+  // Parallel fetches: checklist, checklist results, battery reports, recipient orgs, org users, spec history
+  const [checklistRes, checklistResultsRes, batteryRes, recipientOrgsRes, orgUsersRes, techRolesRes, specHistoryRes] = await Promise.all([
     equipType
       ? supabase
           .from('checklist_templates')
@@ -91,6 +92,12 @@ export default async function EquipmentDetailPage({
       .select('user_id, users!user_id ( id, first_name, last_name, email )')
       .eq('organization_id', equip.organization_id)
       .in('role', ['technician', 'org_admin']),
+    // Hardware spec edits, newest first
+    supabase
+      .from('equipment_spec_history')
+      .select('id, field, from_value, to_value, occurred_at, reason, user:users!user_id ( first_name, last_name )')
+      .eq('equipment_id', id)
+      .order('occurred_at', { ascending: false }),
   ])
 
   type LocalChecklistItem = { id: string; checklist_template_id: string; order: number; label: string; result_type: 'boolean' | 'text' | 'numeric'; required: boolean; help_text: string | null }
@@ -115,6 +122,13 @@ export default async function EquipmentDetailPage({
     user: { first_name: string; last_name: string } | null
   }[]
   history.sort((a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime())
+
+  type LocalSpecHistory = {
+    id: string; field: string; from_value: string | null; to_value: string | null
+    occurred_at: string; reason: string | null
+    user: { first_name: string; last_name: string } | null
+  }
+  const specHistory = (specHistoryRes.data ?? []) as unknown as LocalSpecHistory[]
 
   const donorOrg = equip.donor_org as { name: string } | null
   const destOrg = equip.destination_org as { id: string; name: string } | null
@@ -178,6 +192,22 @@ export default async function EquipmentDetailPage({
                   <><dt>OS</dt><dd>{String(equip.specs.os)}</dd></>
                 )}
               </dl>
+
+              {ctx?.canManageEquipment && (
+                <HardwareForm
+                  equipmentId={equip.id}
+                  make={equip.make ?? null}
+                  model={equip.model ?? null}
+                  processor={equip.processor ?? null}
+                  ramGb={equip.ram_gb ?? null}
+                  diskCapacityGb={equip.disk_capacity_gb ?? null}
+                  diskType={equip.specs?.disk_type ? String(equip.specs.disk_type) : null}
+                  screenSizeIn={
+                    equip.specs?.screen_size_in != null ? Number(equip.specs.screen_size_in) : null
+                  }
+                  os={equip.specs?.os ? String(equip.specs.os) : null}
+                />
+              )}
             </div>
           </div>
 
@@ -287,6 +317,34 @@ export default async function EquipmentDetailPage({
               </div>
             )}
           </div>
+
+          {/* Hardware change history — only once something has been edited */}
+          {specHistory.length > 0 && (
+            <div className="card">
+              <div className="card-header"><span className="card-title">Hardware Change History</span></div>
+              <div className="table-wrapper">
+                <table className="table">
+                  <thead>
+                    <tr><th>Field</th><th>From</th><th>To</th><th>Reason</th><th>By</th><th>When</th></tr>
+                  </thead>
+                  <tbody>
+                    {specHistory.map((h) => (
+                      <tr key={h.id}>
+                        <td>{HARDWARE_FIELD_LABELS[h.field] ?? h.field}</td>
+                        <td className="table-muted">{formatSpecValue(h.field, h.from_value)}</td>
+                        <td>{formatSpecValue(h.field, h.to_value)}</td>
+                        <td className="table-muted">{h.reason ?? '—'}</td>
+                        <td className="table-muted">
+                          {h.user ? `${h.user.first_name} ${h.user.last_name}`.trim() || 'System' : 'System'}
+                        </td>
+                        <td className="table-muted">{new Date(h.occurred_at).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Right column ──────────────────────────────── */}
@@ -365,4 +423,11 @@ export default async function EquipmentDetailPage({
       </div>
     </div>
   )
+}
+
+/** Spec history stores every value as text; disk type is the one coded value. */
+function formatSpecValue(field: string, value: string | null) {
+  if (value == null) return '—'
+  if (field === 'specs.disk_type') return DISK_TYPE_LABELS[value as DiskType] ?? value
+  return value
 }
