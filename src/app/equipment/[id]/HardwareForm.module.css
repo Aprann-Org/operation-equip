@@ -32,8 +32,15 @@
   background: #fafafa;
 }
 
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .success {
-  margin-bottom: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0;
   padding: 9px 12px;
   font-size: 13px;
   color: var(--green);
