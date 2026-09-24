@@ -14,10 +14,11 @@ async function getStats() {
     supabase
       .from('equipment')
       .select(`
-        id, internal_id, make, model, date_sent,
+        id, internal_id, make, model, date_sent, stage,
         destination_org:organizations!destination_organization_id ( name )
       `)
-      .eq('stage', 'distributed')
+      // Held in country counts as shipped — it has left, it just isn't assigned yet.
+      .in('stage', ['in_country', 'distributed'])
       .order('date_sent', { ascending: false })
       .limit(5),
   ])
@@ -126,7 +127,7 @@ export default async function DashboardPage() {
             {stats.recentShipments.length === 0 ? (
               <div className="empty-state">
                 <span className="empty-icon">📤</span>
-                <span>No distributed equipment yet.</span>
+                <span>No shipped equipment yet.</span>
               </div>
             ) : (
               <div className="table-wrapper">
@@ -149,7 +150,11 @@ export default async function DashboardPage() {
                               </div>
                             )}
                           </td>
-                          <td className="table-muted">{dest ?? '—'}</td>
+                          <td className="table-muted">
+                            {dest ?? (e.stage === 'in_country'
+                              ? <span className="badge badge-in_country">{STAGE_LABELS.in_country}</span>
+                              : '—')}
+                          </td>
                           <td className="table-muted">
                             {e.date_sent ? new Date(e.date_sent).toLocaleDateString() : '—'}
                           </td>
