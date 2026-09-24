@@ -211,7 +211,7 @@ export async function bulkUpdateEquipment(
     if (stage === 'received' && !('date_received' in patch)) {
       autoDates.push({ column: 'date_received', value: today })
     }
-    if (stage === 'distributed' && !('date_sent' in patch)) {
+    if ((stage === 'in_country' || stage === 'distributed') && !('date_sent' in patch)) {
       autoDates.push({ column: 'date_sent', value: today })
     }
     if (stage === 'retired') {

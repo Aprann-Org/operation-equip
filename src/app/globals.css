@@ -17,6 +17,8 @@
   --red-light: #fef2f2;
   --orange: #ea580c;
   --orange-light: #fff7ed;
+  --teal: #0d9488;
+  --teal-light: #f0fdfa;
 }
 
 html, body {
@@ -210,6 +212,7 @@ a { color: inherit; text-decoration: none; }
 .badge-received            { background: var(--blue-light); color: var(--blue); }
 .badge-in_process          { background: var(--amber-light); color: var(--amber); }
 .badge-ready_for_distribution { background: var(--purple-light); color: var(--purple); }
+.badge-in_country          { background: var(--teal-light); color: var(--teal); }
 .badge-distributed         { background: var(--green-light); color: var(--green); }
 .badge-in_support          { background: var(--orange-light); color: var(--orange); }
 .badge-retired             { background: #f3f4f6; color: var(--text-muted); }

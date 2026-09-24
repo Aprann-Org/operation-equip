@@ -33,7 +33,10 @@ export async function changeStage(formData: FormData): Promise<{ error?: string 
   // clobber a date that was already recorded (or corrected by hand).
   const today = new Date().toISOString().split('T')[0]
   if (newStage === 'received' && !equip.date_received) updateData.date_received = today
-  if (newStage === 'distributed' && !equip.date_sent) updateData.date_sent = today
+  // Distributed also stamps it so the optional in_country hop can be skipped.
+  if ((newStage === 'in_country' || newStage === 'distributed') && !equip.date_sent) {
+    updateData.date_sent = today
+  }
   if (newStage === 'retired') {
     const retirementReason = (formData.get('retirement_reason') as string) || null
     if (!retirementReason) return { error: 'Retirement reason is required' }

@@ -42,6 +42,8 @@ export function RowActions({ equipmentId, stage, subStatus }: Props) {
   const currentIdx = STAGE_ORDER.indexOf(stage)
   const nextStage =
     currentIdx >= 0 && currentIdx < STAGE_ORDER.length - 1 ? STAGE_ORDER[currentIdx + 1] : null
+  // In Country is optional — devices handed out on arrival skip straight to Distributed.
+  const skipStage: EquipmentStage | null = nextStage === 'in_country' ? 'distributed' : null
 
   const error = stageState.error ?? subState.error ?? releaseState.error
 
@@ -73,6 +75,16 @@ export function RowActions({ equipmentId, stage, subStatus }: Props) {
           <input type="hidden" name="new_stage" value={nextStage} />
           <button type="submit" disabled={stagePending} className="btn btn-primary btn-sm">
             {stagePending ? 'Moving…' : `Move to ${STAGE_LABELS[nextStage]}`}
+          </button>
+        </form>
+      )}
+
+      {skipStage && (
+        <form action={stageAction}>
+          <input type="hidden" name="equipment_id" value={equipmentId} />
+          <input type="hidden" name="new_stage" value={skipStage} />
+          <button type="submit" disabled={stagePending} className="btn btn-secondary btn-sm">
+            {`Move to ${STAGE_LABELS[skipStage]}`}
           </button>
         </form>
       )}
