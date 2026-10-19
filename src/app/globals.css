@@ -331,3 +331,11 @@ a { color: inherit; text-decoration: none; }
   .page-container { padding: 1.25rem 1rem; }
   .form-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Print ───────────────────────────────────────────────── */
+@media print {
+  body { background: #fff; }
+  body > nav,
+  body > [role='status'],
+  .no-print { display: none !important; }
+}

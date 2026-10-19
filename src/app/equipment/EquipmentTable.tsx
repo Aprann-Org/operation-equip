@@ -14,6 +14,7 @@ import {
 } from '@/lib/types'
 import { bulkUpdateEquipment } from './actions'
 import { CLEAR_VALUE, type BulkEditState } from './bulk-edit'
+import { MAX_REPORT_ROWS, reportHref } from './report/config'
 import { SORT_COLUMNS, formatDate, sortHref, type SortDir, type SortKey } from './table-config'
 import styles from './EquipmentTable.module.css'
 
@@ -129,8 +130,48 @@ export function EquipmentTable({
     setSelected(allSelected ? new Set() : new Set(visibleIds))
   }
 
+  // Opens in a new tab so the selection survives a trip to the report.
+  const reportButton = selectedIds.length > MAX_REPORT_ROWS ? (
+    <button
+      type="button"
+      className="btn btn-secondary btn-sm"
+      disabled
+      title={`Reports cover up to ${MAX_REPORT_ROWS} devices — narrow the selection`}
+    >
+      Test report
+    </button>
+  ) : (
+    <a
+      href={reportHref(selectedIds)}
+      target="_blank"
+      rel="noopener"
+      className="btn btn-secondary btn-sm"
+    >
+      Test report
+    </a>
+  )
+
   return (
     <>
+      {!canBulkEdit && selectedIds.length > 0 && (
+        <div className={styles.bulkBar}>
+          <div className={styles.bulkHeader} style={{ marginBottom: 0 }}>
+            <span className={styles.bulkCount}>{selectedIds.length} selected</span>
+            <span className={styles.bulkHint}>
+              Side-by-side status and test results for the selected devices.
+            </span>
+            {reportButton}
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setSelected(new Set())}
+            >
+              Clear selection
+            </button>
+          </div>
+        </div>
+      )}
+
       {canBulkEdit && selectedIds.length > 0 && (
         <form id={BULK_FORM_ID} action={applyBulkEdit} className={styles.bulkBar}>
           {/* Carried as hidden inputs rather than named checkboxes so the
@@ -146,6 +187,7 @@ export function EquipmentTable({
             <span className={styles.bulkHint}>
               Fields left on “Unchanged” or blank are not touched.
             </span>
+            {reportButton}
             <button
               type="button"
               className="btn btn-secondary btn-sm"
@@ -338,8 +380,7 @@ export function EquipmentTable({
         <table className="table">
           <thead>
             <tr>
-              {canBulkEdit && (
-                <th className={styles.checkCell}>
+              <th className={styles.checkCell}>
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -351,7 +392,6 @@ export function EquipmentTable({
                     aria-label={`Select all ${rows.length} filtered rows`}
                   />
                 </th>
-              )}
               {SORT_COLUMNS.map((col) => {
                 const isActive = activeSort === col.key
                 return (
@@ -375,8 +415,7 @@ export function EquipmentTable({
               const isSelected = selected.has(row.id)
               return (
                 <tr key={row.id} className={isSelected ? styles.rowSelected : undefined}>
-                  {canBulkEdit && (
-                    <td className={styles.checkCell}>
+                  <td className={styles.checkCell}>
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -388,7 +427,6 @@ export function EquipmentTable({
                         title="Shift-click to select a range"
                       />
                     </td>
-                  )}
                   <td>
                     <a href={`/equipment/${row.id}`} className="table-link">
                       {row.internalId}

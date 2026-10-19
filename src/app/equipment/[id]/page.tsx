@@ -161,7 +161,12 @@ export default async function EquipmentDetailPage({
             )}
           </div>
         </div>
-        <a href="/equipment" className="btn btn-secondary">← Back</a>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {ctx?.canManageEquipment && (
+            <a href={`/equipment/new?from=${equip.id}`} className="btn btn-secondary">Duplicate</a>
+          )}
+          <a href="/equipment" className="btn btn-secondary">← Back</a>
+        </div>
       </div>
 
       <div className={styles.layout}>
