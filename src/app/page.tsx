@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { getCurrentUserContext } from '@/lib/auth'
 import { getMyWorkItems } from './my-work/data'
 import { MyWorkPanel } from './MyWorkPanel'
-import { STAGE_ORDER, STAGE_LABELS, STAGE_COLORS } from '@/lib/types'
+import { STAGE_ORDER, STAGE_LABELS, STAGE_COLORS, type EquipmentStage } from '@/lib/types'
 import styles from './page.module.css'
 
 async function getStats() {
@@ -17,8 +17,8 @@ async function getStats() {
         id, internal_id, make, model, date_sent, stage,
         destination_org:organizations!destination_organization_id ( name )
       `)
-      // Held in country counts as shipped — it has left, it just isn't assigned yet.
-      .in('stage', ['in_country', 'distributed'])
+      // In transit and held in country both count — it has left, it just isn't assigned yet.
+      .in('stage', ['shipped', 'in_country', 'distributed'])
       .order('date_sent', { ascending: false })
       .limit(5),
   ])
@@ -151,8 +151,8 @@ export default async function DashboardPage() {
                             )}
                           </td>
                           <td className="table-muted">
-                            {dest ?? (e.stage === 'in_country'
-                              ? <span className="badge badge-in_country">{STAGE_LABELS.in_country}</span>
+                            {dest ?? (e.stage === 'shipped' || e.stage === 'in_country'
+                              ? <span className={`badge badge-${e.stage}`}>{STAGE_LABELS[e.stage as EquipmentStage]}</span>
                               : '—')}
                           </td>
                           <td className="table-muted">

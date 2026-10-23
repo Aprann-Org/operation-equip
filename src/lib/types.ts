@@ -6,6 +6,7 @@ export type EquipmentStage =
   | 'received'
   | 'in_process'
   | 'ready_for_distribution'
+  | 'shipped'
   | 'in_country'
   | 'distributed'
   | 'in_support'
@@ -154,6 +155,7 @@ export const STAGE_ORDER: EquipmentStage[] = [
   'received',
   'in_process',
   'ready_for_distribution',
+  'shipped',
   'in_country',
   'distributed',
 ]
@@ -163,6 +165,7 @@ export const STAGE_LABELS: Record<EquipmentStage, string> = {
   received: 'Received',
   in_process: 'In Process',
   ready_for_distribution: 'Ready to Ship',
+  shipped: 'Shipped',
   in_country: 'In Country',
   distributed: 'Distributed',
   in_support: 'In Support',
@@ -256,6 +259,7 @@ export const STAGE_COLORS: Record<EquipmentStage, string> = {
   received: '#2563eb',
   in_process: '#d97706',
   ready_for_distribution: '#7c3aed',
+  shipped: '#0284c7',
   in_country: '#0d9488',
   distributed: '#16a34a',
   in_support: '#ea580c',

@@ -12,6 +12,7 @@ export const ACTIVE_STAGES: EquipmentStage[] = [
   'received',
   'in_process',
   'ready_for_distribution',
+  'shipped',
   'in_country',
   'in_support',
 ]

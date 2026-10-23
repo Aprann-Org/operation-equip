@@ -33,8 +33,12 @@ export async function changeStage(formData: FormData): Promise<{ error?: string 
   // clobber a date that was already recorded (or corrected by hand).
   const today = new Date().toISOString().split('T')[0]
   if (newStage === 'received' && !equip.date_received) updateData.date_received = today
-  // Distributed also stamps it so the optional in_country hop can be skipped.
-  if ((newStage === 'in_country' || newStage === 'distributed') && !equip.date_sent) {
+  // Shipped is where date_sent normally gets stamped; the later stages stamp it
+  // too so a device moved past Shipped by hand still gets a sent date.
+  if (
+    (newStage === 'shipped' || newStage === 'in_country' || newStage === 'distributed') &&
+    !equip.date_sent
+  ) {
     updateData.date_sent = today
   }
   if (newStage === 'retired') {
