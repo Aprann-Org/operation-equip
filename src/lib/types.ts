@@ -223,6 +223,18 @@ export const HARDWARE_FIELD_LABELS: Record<string, string> = {
   'specs.os': 'Operating System',
 }
 
+/**
+ * The provenance fields `updateProvenance` is allowed to change. These share
+ * equipment_spec_history with the hardware fields; the donor is recorded by
+ * organization name, not id, so the history stays readable on its own.
+ */
+export const PROVENANCE_FIELD_LABELS: Record<string, string> = {
+  donor_organization_id: 'Donor',
+  source_detail: 'Source',
+  sponsor_name: 'Sponsor Name',
+  sponsor_email: 'Sponsor Email',
+}
+
 export const RETIREMENT_REASONS: RetirementReason[] = [
   'lost',
   'broken',

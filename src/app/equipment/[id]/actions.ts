@@ -271,6 +271,143 @@ export async function updateHardware(
   }
 }
 
+/**
+ * Edits where a device came from — donor organization, source detail and
+ * sponsor — after intake. Same contract as updateHardware: every input is
+ * submitted, a blank field clears the value, and each changed field is written
+ * to equipment_spec_history.
+ */
+export async function updateProvenance(
+  _prevState: { error: string | null; message: string | null },
+  formData: FormData
+): Promise<{ error: string | null; message: string | null }> {
+  const ctx = await getCurrentUserContext()
+  if (!ctx) return { error: 'Not authenticated', message: null }
+  if (!ctx.canManageEquipment) {
+    return { error: 'You do not have permission to edit provenance', message: null }
+  }
+
+  const equipmentId = formData.get('equipment_id')
+  if (typeof equipmentId !== 'string' || !UUID_RE.test(equipmentId)) {
+    return { error: 'Invalid equipment id', message: null }
+  }
+
+  function text(name: string, max: number): string | null | undefined {
+    const raw = formData.get(name)
+    if (typeof raw !== 'string') return null
+    const trimmed = raw.trim()
+    if (!trimmed) return null
+    return trimmed.length > max ? undefined : trimmed
+  }
+
+  const donorRaw = formData.get('donor_organization_id')
+  const donorId = typeof donorRaw === 'string' && donorRaw ? donorRaw : null
+  if (donorId && !UUID_RE.test(donorId)) {
+    return { error: 'Invalid donor organization', message: null }
+  }
+
+  const sourceDetail = text('source_detail', 500)
+  const sponsorName = text('sponsor_name', MAX_SPEC_TEXT)
+  const sponsorEmail = text('sponsor_email', 320)
+
+  const invalid: string[] = []
+  if (sourceDetail === undefined) invalid.push('Source')
+  if (sponsorName === undefined) invalid.push('Sponsor Name')
+  if (sponsorEmail === undefined || (sponsorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sponsorEmail))) {
+    invalid.push('Sponsor Email')
+  }
+  if (invalid.length) {
+    return { error: `Invalid value for: ${invalid.join(', ')}`, message: null }
+  }
+  // The email is optional contact info for a named sponsor, never a sponsor on its own.
+  if (sponsorEmail && !sponsorName) {
+    return { error: 'Sponsor email needs a sponsor name', message: null }
+  }
+
+  const supabase = await createClient()
+
+  const { data: before } = await supabase
+    .from('equipment')
+    .select('organization_id, donor_organization_id, source_detail, sponsor_name, sponsor_email, donor_org:organizations!donor_organization_id ( name )')
+    .eq('id', equipmentId)
+    .single()
+
+  if (!before) return { error: 'Equipment not found', message: null }
+
+  const next: Record<string, string | null> = {
+    donor_organization_id: donorId,
+    source_detail: sourceDetail ?? null,
+    sponsor_name: sponsorName ?? null,
+    sponsor_email: sponsorEmail ?? null,
+  }
+
+  const changes: Array<{ field: string; from: string | null; to: string | null }> = []
+  const patch: Record<string, string | null> = {}
+
+  for (const [column, value] of Object.entries(next)) {
+    const current = ((before as Record<string, unknown>)[column] as string | null) ?? null
+    if (current === value) continue
+    patch[column] = value
+    changes.push({ field: column, from: current, to: value })
+  }
+
+  if (!changes.length) return { error: null, message: 'No changes to save.' }
+
+  // The donor is logged by name. Looking the new one up also rejects an id
+  // that isn't a donor organization before anything is written.
+  const donorChange = changes.find((c) => c.field === 'donor_organization_id')
+  if (donorChange) {
+    donorChange.from = (before.donor_org as unknown as { name: string } | null)?.name ?? null
+    if (donorId) {
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('name')
+        .eq('id', donorId)
+        .in('type', ['donor', 'both'])
+        .maybeSingle()
+      if (!org) return { error: 'Donor organization not found', message: null }
+      donorChange.to = org.name
+    }
+  }
+
+  // .select() lets us detect if RLS blocked the update (returns empty array)
+  const { data: updated, error: updateError } = await supabase
+    .from('equipment')
+    .update(patch)
+    .eq('id', equipmentId)
+    .select('id')
+
+  if (updateError) return { error: updateError.message, message: null }
+  if (!updated?.length) return { error: 'Permission denied', message: null }
+
+  const reason = ((formData.get('reason') as string) ?? '').trim().slice(0, MAX_REASON) || null
+
+  const { error: historyError } = await supabase.from('equipment_spec_history').insert(
+    changes.map((c) => ({
+      organization_id: before.organization_id,
+      equipment_id: equipmentId,
+      field: c.field,
+      from_value: c.from,
+      to_value: c.to,
+      user_id: ctx.userId,
+      reason,
+    }))
+  )
+
+  revalidatePath(`/equipment/${equipmentId}`)
+  revalidatePath('/equipment')
+  // Both the old and new donor's org pages list this device.
+  revalidatePath('/organizations/[id]', 'page')
+
+  const count = changes.length
+  return {
+    error: null,
+    message:
+      `Saved ${count} change${count !== 1 ? 's' : ''}.` +
+      (historyError ? ` Change history could not be recorded: ${historyError.message}` : ''),
+  }
+}
+
 export async function addNote(formData: FormData): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

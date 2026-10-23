@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import { DISK_TYPE_LABELS, HARDWARE_FIELD_LABELS, STAGE_LABELS, STAGE_LABELS as SL, type DiskType, type EquipmentStage, type EquipmentSubStatus } from '@/lib/types'
+import { DISK_TYPE_LABELS, HARDWARE_FIELD_LABELS, PROVENANCE_FIELD_LABELS, STAGE_LABELS, STAGE_LABELS as SL, type DiskType, type EquipmentStage, type EquipmentSubStatus } from '@/lib/types'
 import { StagePanel } from './StagePanel'
 import { ChecklistPanel } from './ChecklistPanel'
 import { NotesPanel } from './NotesPanel'
 import { BatteryPanel } from './BatteryPanel'
 import { DestinationForm } from './DestinationForm'
 import { HardwareForm } from './HardwareForm'
+import { ProvenanceForm } from './ProvenanceForm'
 import { assignTechnician } from './actions'
 import { getCurrentUserContext } from '@/lib/auth'
 import styles from './page.module.css'
@@ -55,8 +56,8 @@ export default async function EquipmentDetailPage({
 
   const equipType = equip.equipment_type as { id: string; name: string } | null
 
-  // Parallel fetches: checklist, checklist results, battery reports, recipient orgs, org users, spec history
-  const [checklistRes, checklistResultsRes, batteryRes, recipientOrgsRes, orgUsersRes, techRolesRes, specHistoryRes] = await Promise.all([
+  // Parallel fetches: checklist, checklist results, battery reports, recipient orgs, org users, spec history, donor orgs
+  const [checklistRes, checklistResultsRes, batteryRes, recipientOrgsRes, orgUsersRes, techRolesRes, specHistoryRes, donorOrgsRes] = await Promise.all([
     equipType
       ? supabase
           .from('checklist_templates')
@@ -98,6 +99,11 @@ export default async function EquipmentDetailPage({
       .select('id, field, from_value, to_value, occurred_at, reason, user:users!user_id ( first_name, last_name )')
       .eq('equipment_id', id)
       .order('occurred_at', { ascending: false }),
+    supabase
+      .from('organizations')
+      .select('id, name, status')
+      .in('type', ['donor', 'both'])
+      .order('name'),
   ])
 
   type LocalChecklistItem = { id: string; checklist_template_id: string; order: number; label: string; result_type: 'boolean' | 'text' | 'numeric'; required: boolean; help_text: string | null }
@@ -107,6 +113,10 @@ export default async function EquipmentDetailPage({
   const checklistResults = checklistResultsRes.data ?? []
   const batteryReports = batteryRes.data ?? []
   const recipientOrgs = recipientOrgsRes.data ?? []
+  // Keep the current donor selectable even if it has since been deactivated,
+  // or saving the provenance form would silently clear it.
+  const donorOrgs = (donorOrgsRes.data ?? [])
+    .filter((o) => o.status === 'active' || o.id === equip.donor_organization_id)
   const orgUsers = orgUsersRes.data ?? []
   type TechUser = { id: string; first_name: string; last_name: string; email: string }
   const technicians = (techRolesRes.data ?? [])
@@ -235,6 +245,17 @@ export default async function EquipmentDetailPage({
                     : '—'}
                 </dd>
               </dl>
+
+              {ctx?.canManageEquipment && (
+                <ProvenanceForm
+                  equipmentId={equip.id}
+                  donorOrganizationId={equip.donor_organization_id ?? null}
+                  sourceDetail={equip.source_detail ?? null}
+                  sponsorName={equip.sponsor_name ?? null}
+                  sponsorEmail={equip.sponsor_email ?? null}
+                  donorOrgs={donorOrgs}
+                />
+              )}
             </div>
           </div>
 
@@ -323,10 +344,10 @@ export default async function EquipmentDetailPage({
             )}
           </div>
 
-          {/* Hardware change history — only once something has been edited */}
+          {/* Hardware & provenance change history — only once something has been edited */}
           {specHistory.length > 0 && (
             <div className="card">
-              <div className="card-header"><span className="card-title">Hardware Change History</span></div>
+              <div className="card-header"><span className="card-title">Change History</span></div>
               <div className="table-wrapper">
                 <table className="table">
                   <thead>
@@ -335,7 +356,7 @@ export default async function EquipmentDetailPage({
                   <tbody>
                     {specHistory.map((h) => (
                       <tr key={h.id}>
-                        <td>{HARDWARE_FIELD_LABELS[h.field] ?? h.field}</td>
+                        <td>{HARDWARE_FIELD_LABELS[h.field] ?? PROVENANCE_FIELD_LABELS[h.field] ?? h.field}</td>
                         <td className="table-muted">{formatSpecValue(h.field, h.from_value)}</td>
                         <td>{formatSpecValue(h.field, h.to_value)}</td>
                         <td className="table-muted">{h.reason ?? '—'}</td>

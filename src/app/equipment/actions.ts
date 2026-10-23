@@ -48,6 +48,11 @@ export async function createEquipment(
   const internal_id = (formData.get('internal_id') as string).trim()
   if (!internal_id) return { error: 'Internal ID is required' }
 
+  // The email is optional contact info for a named sponsor, never a sponsor on its own.
+  if (formData.get('sponsor_email') && !((formData.get('sponsor_name') as string) ?? '').trim()) {
+    return { error: 'Sponsor email needs a sponsor name' }
+  }
+
   const diskType = formData.get('disk_type') as string | null
   const screenSize = formData.get('screen_size_in') as string | null
   const os = formData.get('os') as string | null
