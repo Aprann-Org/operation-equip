@@ -15,6 +15,10 @@ type Props = {
   diskType: string | null
   screenSizeIn: number | null
   os: string | null
+  serialNumber: string | null
+  hardwareUuid: string | null
+  /** Admins only — the server ignores these fields for anyone else. */
+  canEditIdentity: boolean
 }
 
 export function HardwareForm({
@@ -27,6 +31,9 @@ export function HardwareForm({
   diskType,
   screenSizeIn,
   os,
+  serialNumber,
+  hardwareUuid,
+  canEditIdentity,
 }: Props) {
   const [open, setOpen] = useState(false)
   // Cancel leaves the last result behind in useActionState, which has no reset.
@@ -59,6 +66,7 @@ export function HardwareForm({
    */
   const savedValues = JSON.stringify([
     make, model, processor, ramGb, diskCapacityGb, diskType, screenSizeIn, os,
+    serialNumber, hardwareUuid,
   ])
 
   return (
@@ -80,6 +88,9 @@ export function HardwareForm({
 
           <p className="field-hint" style={{ marginTop: 0, marginBottom: '1rem' }}>
             Clearing a field empties it — every value here is saved as shown.
+            {canEditIdentity && (
+              <> Serial number and hardware UUID tie this record to the physical laptop for the intake script — only change them if the motherboard was replaced or the wrong laptop was scanned.</>
+            )}
           </p>
 
           <div className="form-grid">
@@ -120,6 +131,18 @@ export function HardwareForm({
               <label className="label" htmlFor="hw-os">Operating System</label>
               <input id="hw-os" name="os" defaultValue={os ?? ''} className="input" placeholder="e.g. Windows 11 Pro" />
             </div>
+            {canEditIdentity && (
+              <>
+                <div className="field">
+                  <label className="label" htmlFor="hw-serial_number">Serial Number</label>
+                  <input id="hw-serial_number" name="serial_number" defaultValue={serialNumber ?? ''} className="input" placeholder="Set by the intake script" />
+                </div>
+                <div className="field">
+                  <label className="label" htmlFor="hw-hardware_uuid">Hardware UUID</label>
+                  <input id="hw-hardware_uuid" name="hardware_uuid" defaultValue={hardwareUuid ?? ''} className="input" placeholder="Set by the intake script" />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="field">

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import { DISK_TYPE_LABELS, HARDWARE_FIELD_LABELS, PROVENANCE_FIELD_LABELS, STAGE_LABELS, STAGE_LABELS as SL, type DiskType, type EquipmentStage, type EquipmentSubStatus } from '@/lib/types'
+import { DISK_TYPE_LABELS, HARDWARE_FIELD_LABELS, INTAKE_FIELD_LABELS, PROVENANCE_FIELD_LABELS, STAGE_LABELS, STAGE_LABELS as SL, type DiskType, type EquipmentStage, type EquipmentSubStatus } from '@/lib/types'
 import { StagePanel } from './StagePanel'
 import { ChecklistPanel } from './ChecklistPanel'
 import { NotesPanel } from './NotesPanel'
@@ -206,6 +206,20 @@ export default async function EquipmentDetailPage({
                 {equip.specs?.os && (
                   <><dt>OS</dt><dd>{String(equip.specs.os)}</dd></>
                 )}
+                {equip.specs?.bios_version && (
+                  <>
+                    <dt>BIOS</dt>
+                    <dd>
+                      {String(equip.specs.bios_version)}
+                      {equip.specs?.bios_date ? ` · ${String(equip.specs.bios_date)}` : ''}
+                    </dd>
+                  </>
+                )}
+                <dt>Serial Number</dt><dd>{equip.serial_number ?? '—'}</dd>
+                <dt>Hardware UUID</dt>
+                <dd style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all' }}>
+                  {equip.hardware_uuid ?? '—'}
+                </dd>
               </dl>
 
               {ctx?.canManageEquipment && (
@@ -221,6 +235,9 @@ export default async function EquipmentDetailPage({
                     equip.specs?.screen_size_in != null ? Number(equip.specs.screen_size_in) : null
                   }
                   os={equip.specs?.os ? String(equip.specs.os) : null}
+                  serialNumber={equip.serial_number ?? null}
+                  hardwareUuid={equip.hardware_uuid ?? null}
+                  canEditIdentity={!!(ctx.isSuperAdmin || ctx.isOrgAdmin)}
                 />
               )}
             </div>
@@ -356,7 +373,7 @@ export default async function EquipmentDetailPage({
                   <tbody>
                     {specHistory.map((h) => (
                       <tr key={h.id}>
-                        <td>{HARDWARE_FIELD_LABELS[h.field] ?? PROVENANCE_FIELD_LABELS[h.field] ?? h.field}</td>
+                        <td>{HARDWARE_FIELD_LABELS[h.field] ?? INTAKE_FIELD_LABELS[h.field] ?? PROVENANCE_FIELD_LABELS[h.field] ?? h.field}</td>
                         <td className="table-muted">{formatSpecValue(h.field, h.from_value)}</td>
                         <td>{formatSpecValue(h.field, h.to_value)}</td>
                         <td className="table-muted">{h.reason ?? '—'}</td>

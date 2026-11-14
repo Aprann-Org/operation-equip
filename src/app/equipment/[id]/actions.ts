@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUserContext } from '@/lib/auth'
 import { DISK_TYPES, HARDWARE_FIELD_LABELS, type EquipmentStage } from '@/lib/types'
+import { normalizeHardwareUuid, normalizeSerial } from '@/lib/intake'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -104,6 +105,11 @@ export async function changeSubStatus(formData: FormData): Promise<{ error?: str
  * so this form is read as "what you see is what gets saved": a blank field
  * clears the value rather than leaving it alone. Each field that actually
  * changed is written to equipment_spec_history.
+ *
+ * Serial number and hardware UUID are admin-only: they tie the record to a
+ * physical laptop for the intake script, so the form only renders them for
+ * admins, and they are only read here when the caller is one. A database
+ * trigger enforces the same rule for any other writer.
  */
 export async function updateHardware(
   _prevState: { error: string | null; message: string | null },
@@ -169,6 +175,15 @@ export async function updateHardware(
     return raw as T
   }
 
+  /** Blank clears; anything else must survive the same normalization the intake API uses. */
+  function identity(name: string, normalize: (raw: unknown) => string | null): string | null {
+    const raw = formData.get(name)
+    if (typeof raw !== 'string' || !raw.trim()) return null
+    const value = normalize(raw)
+    if (!value) invalid.push(name)
+    return value
+  }
+
   // Promoted columns.
   const nextColumns: Record<string, string | number | null> = {
     make: text('make'),
@@ -176,6 +191,11 @@ export async function updateHardware(
     processor: text('processor'),
     ram_gb: integer('ram_gb', 1, 512),
     disk_capacity_gb: integer('disk_capacity_gb', 1, 1_048_576),
+  }
+
+  if (ctx.isSuperAdmin || ctx.isOrgAdmin) {
+    nextColumns.serial_number = identity('serial_number', normalizeSerial)
+    nextColumns.hardware_uuid = identity('hardware_uuid', normalizeHardwareUuid)
   }
 
   // Laptop keys inside the specs JSONB.
@@ -198,7 +218,7 @@ export async function updateHardware(
   // history rows — both are gone once the update lands.
   const { data: before } = await supabase
     .from('equipment')
-    .select('organization_id, make, model, processor, ram_gb, disk_capacity_gb, specs')
+    .select('organization_id, make, model, processor, ram_gb, disk_capacity_gb, specs, serial_number, hardware_uuid')
     .eq('id', equipmentId)
     .single()
 
@@ -244,7 +264,12 @@ export async function updateHardware(
     .eq('id', equipmentId)
     .select('id')
 
-  if (updateError) return { error: updateError.message, message: null }
+  if (updateError) {
+    if (updateError.code === '23505') {
+      return { error: 'That serial number is already registered to another device', message: null }
+    }
+    return { error: updateError.message, message: null }
+  }
   if (!updated?.length) return { error: 'Permission denied', message: null }
 
   const reason = ((formData.get('reason') as string) ?? '').trim().slice(0, MAX_REASON) || null

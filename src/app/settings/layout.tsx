@@ -12,6 +12,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
         <p className={styles.sidebarTitle}>Settings</p>
         <a href="/settings/users" className={styles.sidebarLink}>Users &amp; Roles</a>
         <a href="/settings/checklists" className={styles.sidebarLink}>Checklist Templates</a>
+        <a href="/settings/intake-keys" className={styles.sidebarLink}>Intake Keys</a>
       </nav>
       <div className={styles.content}>{children}</div>
     </div>
