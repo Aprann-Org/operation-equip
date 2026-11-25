@@ -18,6 +18,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
 
+## Laptop intake script
+
+A PowerShell script can fill in a laptop's hardware fields automatically. See [`scripts/intake/README.md`](scripts/intake/README.md).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -53,6 +53,10 @@ export type Equipment = {
   organization_id: string
   equipment_type_id: string
   internal_id: string
+  /** Manufacturer serial read from the BIOS by the intake script. Admin-editable only. */
+  serial_number: string | null
+  /** SMBIOS UUID read by the intake script. Admin-editable only. */
+  hardware_uuid: string | null
   donor_organization_id: string | null
   source_detail: string | null
   sponsor_name: string | null
@@ -224,6 +228,17 @@ export const HARDWARE_FIELD_LABELS: Record<string, string> = {
   'specs.disk_type': 'Disk Type',
   'specs.screen_size_in': 'Screen Size (in)',
   'specs.os': 'Operating System',
+  serial_number: 'Serial Number',
+  hardware_uuid: 'Hardware UUID',
+}
+
+/**
+ * Fields only the intake script writes (no edit form). Listed so the change
+ * history can label them.
+ */
+export const INTAKE_FIELD_LABELS: Record<string, string> = {
+  'specs.bios_version': 'BIOS Version',
+  'specs.bios_date': 'BIOS Date',
 }
 
 /**

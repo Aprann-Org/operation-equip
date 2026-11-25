@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { ROLE_PREVIEW_COOKIE } from '@/lib/role-preview'
 
-const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password']
+// /api/intake authenticates with its own API key (see app/api/intake), not a session.
+const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password', '/api/intake']
 
 // Routes recipients must not access — redirect them to their portal
 const RECIPIENT_BLOCKED = [

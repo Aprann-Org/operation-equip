@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# intake script config (holds an API key)
+scripts/intake/intake-config.json
